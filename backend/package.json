@@ -2,10 +2,11 @@
     "name": "tic-tac-toe",
     "version": "1.0.0",
     "description": "tic-tac-toe",
-    "main": "index.tsx",
+    "main": "index.ts",
+
     "scripts": {
         "test": "npm test",
-        "start-server": "ts-node  -O '{\"module\": \"commonjs\"}' ./server/index.ts",
+        "start-server": "ts-node ./src/index.ts",
         "start": "parcel public/index.html"
     },
     "author": "King of Shortcuts",

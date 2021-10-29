@@ -17,10 +17,15 @@ export const logger: Logger = function (...args) {
 let cache = ['hello']
 const myDB = {}
 
+
+setInterval(() => {
+    console.log('hello')
+}, 1000)
+
 const origin = `http://localhost:1234`
 const corsOptions = {
     origin,
-    optionsSuccessStatus: 200 
+    optionsSuccessStatus: 200
 
 }
 app.use(cors(corsOptions))

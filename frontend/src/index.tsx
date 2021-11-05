@@ -1,6 +1,5 @@
 
-import { getState, config, Goodie } from './steven/state'
-import { getRandomInt } from './getRandomInt';
+
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 

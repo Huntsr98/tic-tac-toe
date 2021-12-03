@@ -12,6 +12,12 @@ const BoardSquares = () => {
     </div>
 }
 
+const Button = () => {
+
+    return <div>
+
+    </div>
+}
 
 const Board = () => {
 
@@ -23,11 +29,12 @@ const Board = () => {
 const View = () => {
 
     return <div>
-
+        <Button>
+        </Button>
         <Board>
-        <BoardSquares>
-            
-        </BoardSquares>
+            <BoardSquares>
+
+            </BoardSquares>
         </Board>
     </div>
 }

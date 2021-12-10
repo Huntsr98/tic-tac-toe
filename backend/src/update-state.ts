@@ -43,21 +43,22 @@ export const getState = (): ServerState => state
 
 
 
-export const updateState = ({ action, payload }: UpdateState) => {
-    if (action === Action.addGame) {
+export const updateState = (stateUpdate: UpdateState) => {
+
+    if (stateUpdate.action === Action.addGame) {
+        const game: Game = stateUpdate.payload;
         state.games = state.games.map((game) => game)
-            state.games.push(payload) 
+        state.games.push(game)
     }
-    switch (action) {
+    switch (stateUpdate.action) {
         case Action.join:
 
-            
             break
         case Action.addGame:
             state.games = state.games.map((game) => game)
-            state.games.push(payload) 
+            state.games.push(stateUpdate.payload)
             break
-        
+
     }
     return state
 }

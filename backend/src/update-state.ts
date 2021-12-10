@@ -1,28 +1,63 @@
-export let state
+import { Action, Game, GameId, Games, ServerState, UpdateState, UpdateStateArgs, WhoseTurn } from "./types"
+import { v4 as uuidv4 } from 'uuid';
 
-// enum crosses the boundary of type and object
-export enum Action {
-    join = 'join',
-    start = 'start'
-}
+
+
+
 
 // type UpdateStateWinner =  {action: Action.winner, payload: PieceColor} 
 // type UpdateStateStart = {action: Action.start, payload: UserId}
 // type UpdateStateArgs = UpdateStateWinner | UpdateStateStart
 // type UpdateState = (arg: UpdateStateArgs) => ServerState 
 
-const stateFactory() => {
 
+
+export let state: ServerState = {
+    games: []
 }
 
-export const updateState = (args) => {
-    switch (args.action) {
-        case Action.start:
-            state = state || stateFactory(args.payload)
-            break
+export const findWaitingGame = (games: Games): Game | undefined => {
+    return games.find((game) => !game.players.O || !game.players.X)
+}
+
+export const findGame = (state: ServerState, gameId: GameId): Game => {
+    return state.games.find((game) => { 
+        return game.gameId === gameId
+    })
+}
+
+export const gameFactory = (): Game => {
+    return {
+        players: {
+            X: null,
+            O: null
+        },
+        board: [],
+        whoseTurn: WhoseTurn.X,
+        gameId: uuidv4(),
+        winner: null
+    }
+}
+
+export const getState = (): ServerState => state
+
+
+
+export const updateState = ({ action, payload }: UpdateState) => {
+    if (action === Action.addGame) {
+        state.games = state.games.map((game) => game)
+            state.games.push(payload) 
+    }
+    switch (action) {
         case Action.join:
-            state = state || stateFactory(args.payload)
+
+            
             break
+        case Action.addGame:
+            state.games = state.games.map((game) => game)
+            state.games.push(payload) 
+            break
+        
     }
     return state
 }
@@ -37,26 +72,26 @@ export const updateState = (args) => {
 // }) ???
 // }
 
-export const addMoveToColumn = (myColor, columnNumber) => {
-    const column = state.columns[columnNumber]
-    column.push(myColor)
-    logger(state)
-}
+// export const addMoveToColumn = (myColor, columnNumber) => {
+//     const column = state.columns[columnNumber]
+//     column.push(myColor)
+//     // logger(state)
+// }
 
-export const convertStatetoBrowserState = (userId, myColor, state) => {
-    const { players, ...remainingState } = state
+export const convertStatetoBrowserState = (userId, gameId, whoseTurn, state) => {
+    const { players, whoseTurn, ...remainingState } = state
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
     // players in BrowserState
     // AKA we're taking players out of state
-    const browserState: BrowserState = { userId, myColor, ...remainingState }
+    const browserState: BrowserState = { userId, isItMyTurn, ...remainingState }
     return browserState
 }
 
-export const switchWhoseTurn = () => {
-    if (state.whoseTurn === 'black') {
-        state.whoseTurn = 'red'
-    } else {
-        state.whoseTurn = 'black'
-    }
-}
+// export const switchWhoseTurn = () => {
+//     if (state.whoseTurn === 'black') {
+//         state.whoseTurn = 'red'
+//     } else {
+//         state.whoseTurn = 'black'
+//     }
+// }

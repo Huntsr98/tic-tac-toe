@@ -1,7 +1,8 @@
 import * as express from 'express'
 import * as cors from 'cors'
-import { v4 as uuidv4 } from 'uuid';
-import { Action, convertStatetoBrowserState, state, updateState } from './update-state';
+import { convertStatetoBrowserState, findGame, findWaitingGame, gameFactory, getState, updateState } from './update-state';
+import { Action, ServerState } from './types';
+import { v4 as uuidv4 } from 'uuid'
 
 // import state, updateState, Action from new file called update-state?
 
@@ -28,39 +29,42 @@ const corsOptions = {
 }
 app.use(cors(corsOptions))
 
+
+
+
+
 //START ENDPOINTS HERE
-app.post('/start', (req, res) => {
+
+// HW: 
+// clean out logic in /join endpoint that's redundant with update-state
+// make move endpoint
+app.post('/join', (req, res) => {
     console.log('boo')
-    const gameId = req.body.userId || uuidv4()
     const userId = req.body.userId || uuidv4()
+    const state = getState()
+    const existingGame = findWaitingGame(state.games)
+    if (existingGame === undefined) {
+        const newGame = gameFactory()
+        // clone state.games so you don't mutate state
+        
+        updateState({action: Action.addGame, payload: newGame})
+        newGame.players.X = payload
 
-    // from the frontend: 
-    //const responsePromise = axios.post<{state: BrowserState}>('http://localhost:3000/make-a-move', { stateofBoard: state.stateOfBoard, userId: state.userId, gameId: state.gameId, gamesWaitingForPlayer})
-
-    // update the state with: 
-    if (gamesWaitingForPlayer) {
-        state = updateState({action: Action.start, payload: gameId})
-    }
-
-    state = updateState({action: Action.join, payload: userId})
-
-    let gamePiece
- 
-    if (state.players.X === userId) {
-        gamePiece = 'X'
-        // is there something else to add re: which color the board is? boardColor = green here?
+        // if there is no existing Game, then make a new game
+        // assign userId to player X inside of the new game
     } else {
-        state.players.O = userId
-        gamePiece = 'O'
-        // boardColor = red?
+        existingGame.players.O = payload
+        // if there is an existing game, then assign userId to player O
     }
-    
-    // wipe moves
-    state.stateofBoard = []
 
-    const browserState = convertStatetoBrowserState(userId, gamePiece, state)
+    state = updateState({ action: Action.join, payload: userId })
+
+    findGame(state, gameId)
+    const browserState = convertStatetoBrowserState(userId, gamePiece, game)
     res.send(browserState)
 })
+
+
 
 
 

@@ -1,5 +1,5 @@
 import ReactDOM from 'react-dom';
-import { Color, config, isItMyTurn, State } from './state'
+import { Color, config, State } from './state'
 import { checkForWin, join } from './util';
 import React, {useState} from 'react'
 
@@ -69,6 +69,7 @@ const Board = ({ state  }:{state: State}) => {
 */
 const View = () => {
     const [state, setState] = useState<State | null>(null)
+    const [ x, y ] = useState<unknown>()
     let body
 
     if (state === null) {

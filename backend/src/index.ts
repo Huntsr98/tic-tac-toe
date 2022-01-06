@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { convertStatetoBrowserState, findGame, findWaitingGame, gameFactory, getState, updateState } from './update-state';
-import { Action, ServerState } from './types';
+import { Action, Game, ServerState } from './types';
 import { v4 as uuidv4 } from 'uuid'
 
 // import state, updateState, Action from new file called update-state?
@@ -35,9 +35,7 @@ app.use(cors(corsOptions))
 
 //START ENDPOINTS HERE
 
-// HW: 
-// clean out logic in /join endpoint that's redundant with update-state
-// make move endpoint
+
 app.post('/join', (req, res) => {
     console.log('boo')
     const userId = req.body.userId || uuidv4()
@@ -48,24 +46,25 @@ app.post('/join', (req, res) => {
         // clone state.games so you don't mutate state
         
         updateState({action: Action.addGame, payload: newGame})
-        newGame.players.X = payload
+        newGame.players.X = userId
 
         // if there is no existing Game, then make a new game
         // assign userId to player X inside of the new game
     } else {
-        existingGame.players.O = payload
+        existingGame.players.O = userId
         // if there is an existing game, then assign userId to player O
     }
 
-    state = updateState({ action: Action.join, payload: userId })
+    const serverState: ServerState = updateState({ action: Action.join, payload: userId })
 
-    findGame(state, gameId)
-    const browserState = convertStatetoBrowserState(userId, gamePiece, game)
+    const gameOnly: Game = findGame(serverState, existingGame.gameId)
+    const browserState = convertStatetoBrowserState(gameOnly, userId)
     res.send(browserState)
 })
 
 
 
+//make /move endpoint
 
 
 app.listen(port, () => {

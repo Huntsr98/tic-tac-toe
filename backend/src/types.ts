@@ -15,19 +15,25 @@ export type Game = {
         X: null | UserId,
         O: null | UserId
     }
+    whoseTurn: WhoseTurn    
+    gameId: GameId 
     board: Move[]
-    whoseTurn: WhoseTurn
-    gameId: GameId
     winner: null | UserId
 }
 export type Games = Game[]
 export type ServerState = {
     games: Games
 }
+
+
+export type GamePiece = WhoseTurn
 export type BrowserState = {
     userId: UserId,
-    isItMyTurn: boolean,
-    games: Games
+    gamePiece: GamePiece
+    whoseTurn: GamePiece,
+    gameId: GameId,
+    board: Move[],
+    winner: null | UserId
 }
 
 // enum crosses the boundary of type and object

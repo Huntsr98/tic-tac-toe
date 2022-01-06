@@ -1,4 +1,4 @@
-import { Action, Game, GameId, Games, ServerState, UpdateState, UpdateStateArgs, WhoseTurn } from "./types"
+import { Action, BrowserState, Game, GameId, GamePiece, Games, ServerState, UpdateState, UpdateStateArgs, UserId, WhoseTurn } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -21,7 +21,7 @@ export const findWaitingGame = (games: Games): Game | undefined => {
 }
 
 export const findGame = (state: ServerState, gameId: GameId): Game => {
-    return state.games.find((game) => { 
+    return state.games.find((game) => {
         return game.gameId === gameId
     })
 }
@@ -79,20 +79,30 @@ export const updateState = (stateUpdate: UpdateState) => {
 //     // logger(state)
 // }
 
-export const convertStatetoBrowserState = (userId, gameId, whoseTurn, state) => {
-    const { players, whoseTurn, ...remainingState } = state
+export const convertStatetoBrowserState = (gameOnly: Game, userId: UserId) => {
+    const { players, whoseTurn, ...remainingState } = gameOnly
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
     // players in BrowserState
     // AKA we're taking players out of state
-    const browserState: BrowserState = { userId, isItMyTurn, ...remainingState }
+
+    const findGamePiece = () => {
+        let gamePiece
+        if (userId === whoseTurn) {
+            gamePiece = whoseTurn
+        } else {
+            if (players.X === userId) {
+                gamePiece = 'O'
+            }
+            else if (players.O === userId) {
+                gamePiece = 'X'
+            }
+            return gamePiece
+        }
+    }
+
+    const gamePiece: GamePiece = findGamePiece()
+
+    const browserState: BrowserState = { userId, gamePiece, whoseTurn ...remainingState }
     return browserState
 }
-
-// export const switchWhoseTurn = () => {
-//     if (state.whoseTurn === 'black') {
-//         state.whoseTurn = 'red'
-//     } else {
-//         state.whoseTurn = 'black'
-//     }
-// }

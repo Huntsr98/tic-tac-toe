@@ -1,4 +1,4 @@
-import { Action, BrowserState, Game, GameId, GamePiece, Games, ServerState, UpdateState, UpdateStateArgs, UserId, WhoseTurn } from "./types"
+import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -43,19 +43,23 @@ export const getState = (): ServerState => state
 
 
 
-export const updateState = (stateUpdate: UpdateState) => {
+export const updateState = (stateUpdate: StateUpdate) => {
 
-    if (stateUpdate.action === Action.addGame) {
-        const game: Game = stateUpdate.payload;
-        state.games = state.games.map((game) => game)
-        state.games.push(game)
-    }
     switch (stateUpdate.action) {
         case Action.join:
+            //clone state.games before you mutate
+            state.games = [...state.games]
+            // find game with GameId
+            const game = findGame(state, stateUpdate.payload.gameId)
+            // clone game before you mutate
+            const clonedGame = { ...game }
+            // populate player[gamePiece] of game with UserId
+            game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
 
             break
         case Action.addGame:
-            state.games = state.games.map((game) => game)
+            //clone state.games before you mutate
+            state.games = [...state.games]
             state.games.push(stateUpdate.payload)
             break
 
@@ -68,7 +72,7 @@ export const updateState = (stateUpdate: UpdateState) => {
 // app.post('/get-state', (request, response) => {
 //     response.send({
 //         message: 'okay :)',
-//         state: convertStatetoBrowserState(request.body.userId, request.body.myColor, state)
+//         state: convertStateToResponse(request.body.userId, request.body.myColor, state)
 //     })
 // }) ???
 // }
@@ -79,14 +83,14 @@ export const updateState = (stateUpdate: UpdateState) => {
 //     // logger(state)
 // }
 
-export const convertStatetoBrowserState = (gameOnly: Game, userId: UserId) => {
+export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
     const { players, whoseTurn, ...remainingState } = gameOnly
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
-    // players in BrowserState
+    // players in ServerResponse
     // AKA we're taking players out of state
 
-    const findGamePiece = () => {
+    const findGamePiece = (): GamePiece => {
         let gamePiece
         if (userId === whoseTurn) {
             gamePiece = whoseTurn
@@ -103,6 +107,6 @@ export const convertStatetoBrowserState = (gameOnly: Game, userId: UserId) => {
 
     const gamePiece: GamePiece = findGamePiece()
 
-    const browserState: BrowserState = { userId, gamePiece, whoseTurn ...remainingState }
-    return browserState
+    const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, ...remainingState }
+    return serverResponse
 }

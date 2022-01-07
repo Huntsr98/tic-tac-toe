@@ -3,6 +3,11 @@ export enum WhoseTurn {
     O = 'O'
 }
 
+export enum GamePiece {
+    X = 'X',
+    O = 'O'
+}
+
 export type Move = {
     x: number,
     y: number,
@@ -15,8 +20,8 @@ export type Game = {
         X: null | UserId,
         O: null | UserId
     }
-    whoseTurn: WhoseTurn    
-    gameId: GameId 
+    whoseTurn: WhoseTurn
+    gameId: GameId
     board: Move[]
     winner: null | UserId
 }
@@ -26,11 +31,11 @@ export type ServerState = {
 }
 
 
-export type GamePiece = WhoseTurn
-export type BrowserState = {
+
+export type ServerResponse = {
     userId: UserId,
     gamePiece: GamePiece
-    whoseTurn: GamePiece,
+    whoseTurn: WhoseTurn,
     gameId: GameId,
     board: Move[],
     winner: null | UserId
@@ -40,12 +45,16 @@ export type BrowserState = {
 export enum Action {
     join = 'join',
     addGame = 'addGame',
-    makeAMove = 'makeAMove'
+    makeAMove = 'makeAMove',
 }
 
 export type UpdateStateJoin = {
     action: Action.join,
-    payload: { gameId: GameId, userId: UserId }
+    payload: {
+        gameId: GameId,
+        userId: UserId,
+        gamePiece: GamePiece
+    }
 }
 export type UpdateStateAddGame = {
     action: Action.addGame,
@@ -57,6 +66,8 @@ export type UpdateStateMakeAMove = {
     payload: unknown
 }
 
-export type UpdateState = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove
+
+
+export type StateUpdate = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove
 
 

@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
-import { convertStatetoBrowserState, findGame, findWaitingGame, gameFactory, getState, updateState } from './update-state';
-import { Action, Game, ServerState } from './types';
+import { convertStateToResponse, findGame, findWaitingGame, gameFactory, getState, updateState } from './update-state';
+import { Action, Game, GameId, GamePiece, ServerState } from './types';
 import { v4 as uuidv4 } from 'uuid'
 
 // import state, updateState, Action from new file called update-state?
@@ -37,29 +37,38 @@ app.use(cors(corsOptions))
 
 
 app.post('/join', (req, res) => {
-    console.log('boo')
+    console.log(req.body)
     const userId = req.body.userId || uuidv4()
     const state = getState()
-    const existingGame = findWaitingGame(state.games)
-    if (existingGame === undefined) {
-        const newGame = gameFactory()
+   let game = findWaitingGame(state.games)
+    let gameId: GameId
+    let gamePiece: GamePiece
+    if (game === undefined) {
+        game = gameFactory()
         // clone state.games so you don't mutate state
-        
-        updateState({action: Action.addGame, payload: newGame})
-        newGame.players.X = userId
-
+        gameId = game.gameId
+        updateState({ action: Action.addGame, payload: game })
+        gamePiece = GamePiece.X
         // if there is no existing Game, then make a new game
         // assign userId to player X inside of the new game
     } else {
-        existingGame.players.O = userId
+        gameId = game.gameId
+        gamePiece = GamePiece.O
         // if there is an existing game, then assign userId to player O
     }
 
-    const serverState: ServerState = updateState({ action: Action.join, payload: userId })
+    const serverState: ServerState = updateState({
+        action: Action.join,
+        payload: {
+            userId,
+            gameId,
+            gamePiece
+        }
+    })
 
-    const gameOnly: Game = findGame(serverState, existingGame.gameId)
-    const browserState = convertStatetoBrowserState(gameOnly, userId)
-    res.send(browserState)
+    const gameOnly: Game = findGame(serverState, game.gameId)
+    const serverResponse = convertStateToResponse(gameOnly, userId)
+    res.send(serverResponse)
 })
 
 

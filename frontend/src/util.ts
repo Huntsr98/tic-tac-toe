@@ -5,7 +5,7 @@ export const checkForWin = (gamePiece: GamePiece, winner: GamePiece | null): boo
     return gamePiece === winner
 }
 
-const getUrl = (env: Env, endpoint) => {
+const getUrl = (env: Env, endpoint: string) => {
     let domain
     if (env === Env.dev) {
         domain = `http://localhost:${config.port}`
@@ -22,26 +22,6 @@ export const isItMyTurn = (whoseTurn: GamePiece, gamePiece: GamePiece): boolean 
 }
 
 export const join = async (): Promise<ServerResponse> => {
-
-    const mockResponse: ServerResponse = {
-        gameId: 'GameId',
-        userId: 'UserId',
-        whoseTurn: GamePiece.X,
-        gamePiece: GamePiece.X,
-        board: [],
-        winner: null
-    }
-
-    /* 
-    
-
-
-
-Player whose turn it is
-board[]
-{x: number, y: number, type: X|O}
-*/
-
     const userId = localStorage.getItem('userId')
     const response = await axios.post(getUrlJoin(), { userId }) //alternative to {userId: userId}
     // await halts the program until line 21 is completed, ie: until the server has replied

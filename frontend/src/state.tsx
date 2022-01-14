@@ -1,9 +1,4 @@
 
-
-export enum GameStatus {
-    true = 'true',
-    false = 'false'
-}
 export enum Env {
     dev = 'dev',
     prod = 'prod'
@@ -14,7 +9,7 @@ export enum Color {
     gold = 'gold',
     grey = 'grey'
 }
-export enum Piece {
+export enum GamePiece {
     X = 'X',
     O = 'O'
 }
@@ -27,8 +22,8 @@ export type Config = {
         notMyTurn: Color.red
     }
     boardSquareImage: {
-        X: Piece.X
-        O: Piece.O
+        X: GamePiece.X
+        O: GamePiece.O
     }
     boardSquareWidth: number
     boardSquareHeight: number
@@ -50,8 +45,8 @@ export const config: Config = {
         notMyTurn: Color.red
     },
     boardSquareImage: {
-        X: Piece.X, // image of an X?
-        O: Piece.O // image of an O?
+        X: GamePiece.X, // image of an X?
+        O: GamePiece.O // image of an O?
     },
     boardSquareWidth: boardDimension / 3,
     boardSquareHeight: boardDimension / 3,
@@ -69,16 +64,25 @@ export type UserId = string
 export type Move = {
     x: number
     y: number
-    type: Piece
+    type: GamePiece
 }
 
 export type State = {
     gameId: GameId
     userId: UserId
-    whoseTurn: Piece
-    gamePiece: Piece
+    gamePiece: GamePiece
     boardColor: Color
     board: Move[]
-    isItMyTurn: GameStatus
-    
+    isItMyTurn: boolean
+    winner: GamePiece | null
+
+}
+
+export type ServerResponse = {
+    gameId: GameId
+    userId: UserId
+    gamePiece: GamePiece
+    whoseTurn: GamePiece
+    board: Move[]
+    winner: GamePiece | null
 }

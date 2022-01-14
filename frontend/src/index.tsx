@@ -1,51 +1,51 @@
 import ReactDOM from 'react-dom';
-import { Color, config, State } from './state'
-import { checkForWin, join } from './util';
-import React, {useState} from 'react'
+import { Color, config, GamePiece, Move, ServerResponse, State } from './state'
+import { checkForWin, isItMyTurn, join } from './util';
+import React, { useState } from 'react'
 
 
-const BoardSquares = () => {
+const BoardSquare = ({gamePiece}: {gamePiece: GamePiece}) => {
 
     return <div>
-
+        {gamePiece}
     </div>
 }
 
-const Button = ({ cb }) => {
+const Button = ({ cb }: { cb: () => void }) => {
 
     return <button onClick={cb}>
         Join
     </button>
 }
-// HW 12/15 - make the board
+
 let interval: any
-const Board = ({ state  }:{state: State}) => {
+const Board = ({ state }: { state: State }) => {
     let activeBoardColor
 
-    if (checkForWin() === `false`) {
-
-        if (state.isItMyTurn === `true`) {
-            activeBoardColor = state.boardColor.green
+    if (checkForWin(state.gamePiece, state.winner) === false) {
+        if (state.gamePiece === serverResponse.gamePiece) {
+            activeBoardColor = Color.green
         } else {
-            activeBoardColor = state.boardColor.red
+            activeBoardColor = Color.red
         }
     } else {
         // figure out how to make board flash for win
-        const [state, setState] = useState<State>(null)
-        interval = setInterval(() => {
-           if (state.boardColor === 'gold') {
-            activeBoardColor= state.boardColor.grey
-           } else {
-            activeBoardColor= state.boardColor.gold
-           }
-
-        }, 100)
         
-    }
-    return <div color={activeBoardColor}>
-        <BoardSquares>
+        interval = setInterval(() => {
+            if (state.boardColor === 'gold') {
+                activeBoardColor = Color.grey
+            } else {
+                activeBoardColor = Color.gold
+            }
 
-        </BoardSquares>
+        }, 1000)
+
+    }
+   const boardSquares = state.board.map((move: Move)  => {
+       return   <BoardSquare gamePiece={move.type}></BoardSquare>
+   })
+   return <div style={Color =activeBoardColor}>
+      X 
     </div>
 }
 
@@ -69,18 +69,25 @@ const Board = ({ state  }:{state: State}) => {
 */
 const View = () => {
     const [state, setState] = useState<State | null>(null)
-    const [ x, y ] = useState<unknown>()
     let body
 
     if (state === null) {
         body = <Button cb={
             async () => {
-                const state: State = await join()
-
-                setState(state)
+                const response: ServerResponse = await join()
+                const newState: State = {
+                    gameId: response.gameId,
+                    userId: response.userId,
+                    gamePiece: response.gamePiece,
+                    boardColor: Color.green,
+                    board: response.board,
+                    isItMyTurn: isItMyTurn(response.whoseTurn, response.gamePiece),
+                    winner: response.gamePiece
+                }  //Convert response into newState
+                console.log({response, newState})
+                setState(newState)
             }
-        }>
-        </Button>
+        }></Button>
     } else {
         body = <Board state={state}></Board>
     }

@@ -1,10 +1,10 @@
 import ReactDOM from 'react-dom';
-import { Color, config, GamePiece, Move, ServerResponse, State } from './state'
+import { Board, Board as BoardComponent, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
 import { checkForWin, isItMyTurn, join } from './util';
 import React, { useState } from 'react'
 
 
-const BoardSquare = ({gamePiece}: {gamePiece: GamePiece}) => {
+const BoardSquare = ({ gamePiece }: { gamePiece: MaybeGamePiece }) => {
 
     return <div>
         {gamePiece}
@@ -19,18 +19,18 @@ const Button = ({ cb }: { cb: () => void }) => {
 }
 
 let interval: any
-const Board = ({ state }: { state: State }) => {
+const BoardComponent = ({ state }: { state: State }) => {
     let activeBoardColor
 
     if (checkForWin(state.gamePiece, state.winner) === false) {
-        if (state.gamePiece === serverResponse.gamePiece) {
+        if (state.isItMyTurn) {
             activeBoardColor = Color.green
         } else {
             activeBoardColor = Color.red
         }
     } else {
         // figure out how to make board flash for win
-        
+
         interval = setInterval(() => {
             if (state.boardColor === 'gold') {
                 activeBoardColor = Color.grey
@@ -41,14 +41,27 @@ const Board = ({ state }: { state: State }) => {
         }, 1000)
 
     }
-   const boardSquares = state.board.map((move: Move)  => {
-       return   <BoardSquare gamePiece={move.type}></BoardSquare>
-   })
-   return <div style={Color =activeBoardColor}>
-      X 
+    const board = buildBoard(state.board)
+
+    const theBoard = board.map((row) => {
+       return <RowComponent row={row}></RowComponent>
+    })
+    
+
+    return <div style={Color = activeBoardColor}>
+        {theBoard}
+    </div>
+
+
+}
+const RowComponent = ({row}:{row: Row}) => {
+    const theRow = row.map((maybeMove) => {
+        return <BoardSquare gamePiece={maybeMove.type}></BoardSquare>
+    })
+    return <div>
+        {theRow}
     </div>
 }
-
 /*
 * Description
    * Entirety of what user sees upon entering.  Top-level parent.
@@ -67,6 +80,76 @@ const Board = ({ state }: { state: State }) => {
    * Button
 
 */
+export const buildBoard = (moves: Move[]): Board => {
+
+    const indexRowOne: Row = [
+        {
+            type: null,
+            x: 0,
+            y: 0,
+        },
+        {
+            type: null,
+            x: 1,
+            y: 0,
+        },
+        {
+            type: null,
+            x: 2,
+            y: 0,
+        },
+    ]
+    const indexRowTwo: Row = [
+        {
+            type: null,
+            x: 0,
+            y: 1,
+        },
+        {
+            type: null,
+            x: 1,
+            y: 1,
+        },
+        {
+            type: null,
+            x: 2,
+            y: 1,
+        },
+    ]
+    const indexRowThree: Row = [
+        {
+            type: null,
+            x: 0,
+            y: 2,
+        },
+        {
+            type: null,
+            x: 1,
+            y: 2,
+        },
+        {
+            type: null,
+            x: 2,
+            y: 2,
+        },
+    ]
+
+    const board: Board = [
+        indexRowOne,
+        indexRowTwo,
+        indexRowThree
+    ] // figure out how to swap out the moves from the index rows with the argument of this function (moves) using .map
+
+
+    moves.forEach((move: Move) => {
+        const x = move.x
+        const y = move.y
+        board[y][x] = move
+    })
+
+    return board
+}
+
 const View = () => {
     const [state, setState] = useState<State | null>(null)
     let body
@@ -84,12 +167,12 @@ const View = () => {
                     isItMyTurn: isItMyTurn(response.whoseTurn, response.gamePiece),
                     winner: response.gamePiece
                 }  //Convert response into newState
-                console.log({response, newState})
+                console.log({ response, newState })
                 setState(newState)
             }
         }></Button>
     } else {
-        body = <Board state={state}></Board>
+        body = <BoardComponent state={state}></BoardComponent>
     }
 
     return <div>

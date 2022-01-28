@@ -13,7 +13,23 @@ export enum GamePiece {
     X = 'X',
     O = 'O'
 }
+
+
+export type Row = [
+    Move,
+    Move,
+    Move
+]
+export type Board = [
+    Row,
+    Row,
+    Row
+]
+
 const port = 5000 //placeholder
+
+
+
 export type Config = {
     boardHeight: number
     boardWidth: number
@@ -58,13 +74,13 @@ export const config: Config = {
     port: 3000
 }
 
-
+export type MaybeGamePiece = GamePiece | null
 export type GameId = string
 export type UserId = string
 export type Move = {
     x: number
     y: number
-    type: GamePiece
+    type: MaybeGamePiece
 }
 
 export type State = {
@@ -74,7 +90,7 @@ export type State = {
     boardColor: Color
     board: Move[]
     isItMyTurn: boolean
-    winner: GamePiece | null
+    winner: MaybeGamePiece
 
 }
 
@@ -84,5 +100,11 @@ export type ServerResponse = {
     gamePiece: GamePiece
     whoseTurn: GamePiece
     board: Move[]
-    winner: GamePiece | null
+    winner: MaybeGamePiece
 }
+
+export const boarderConfig = {
+    color: Color,
+
+}
+

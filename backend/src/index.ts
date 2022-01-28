@@ -68,24 +68,9 @@ app.post('/join', (req, res) => {
 
     const gameOnly: Game = findGame(serverState, game.gameId)
     const serverResponse = convertStateToResponse(gameOnly, userId)
-    serverResponse.board.push({
-       x: 0,
-        y: 0,
-        type: GamePiece.X 
-    })
-    serverResponse.board.push({
-       x: 0,
-        y: 1,
-        type: GamePiece.X 
-    })
-    serverResponse.board.push({
-       x: 0,
-        y: 2,
-        type: GamePiece.X 
-    })
+
     res.send(serverResponse)
 })
-
 
 
 //make /move endpoint

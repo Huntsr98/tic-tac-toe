@@ -1,4 +1,4 @@
-import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn } from "./types"
+import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 import { extractPlayersMoves } from "./check-for-win";
 
@@ -26,7 +26,13 @@ export const findGame = (state: ServerState, gameId: GameId): Game => {
         return game.gameId === gameId
     })
 }
-
+export const getPlayersPiece = (game: Game, playerId: string) => {
+    if (game.players.O === playerId) {
+        return GamePiece.O
+    } else {
+        return GamePiece.X
+    }
+}
 export const gameFactory = (): Game => {
     return {
         players: {
@@ -109,7 +115,7 @@ export const updateState = (stateUpdate: StateUpdate) => {
 // }
 
 export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
-    const { players, whoseTurn, ...remainingState } = gameOnly
+    const { players, whoseTurn, board, ...remainingState } = gameOnly
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
     // players in ServerResponse
@@ -132,6 +138,14 @@ export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
 
     const gamePiece: GamePiece = findGamePiece()
 
-    const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, ...remainingState }
+    const browserBoard = board.map((move: Move): BrowserMove => {
+        return {
+            x: move.x,
+            y: move.y,
+            type: getPlayersPiece(gameOnly, move.userId)
+
+        }
+    })
+    const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
     return serverResponse
 }

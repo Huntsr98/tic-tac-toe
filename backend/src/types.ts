@@ -30,14 +30,18 @@ export type ServerState = {
     games: Games
 }
 
-
+export type BrowserMove = {
+    x: number
+    y: number
+    type: GamePiece
+}
 
 export type ServerResponse = {
     userId: UserId,
     gamePiece: GamePiece
     whoseTurn: WhoseTurn,
     gameId: GameId,
-    board: Move[],
+    board: BrowserMove[],
     winner: null | UserId
 }
 

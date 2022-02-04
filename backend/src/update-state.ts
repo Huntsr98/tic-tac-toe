@@ -1,5 +1,6 @@
 import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn } from "./types"
 import { v4 as uuidv4 } from 'uuid';
+import { extractPlayersMoves } from "./check-for-win";
 
 
 
@@ -41,6 +42,13 @@ export const gameFactory = (): Game => {
 
 export const getState = (): ServerState => state
 
+export const otherPlayer = (whoAmI) => {
+    if (whoAmI === WhoseTurn.X) {
+        whoAmI = WhoseTurn.O
+    }  else if (whoAmI === WhoseTurn.O) {
+        whoAmI = WhoseTurn.X
+    }
+}
 
 
 export const updateState = (stateUpdate: StateUpdate) => {
@@ -50,9 +58,9 @@ export const updateState = (stateUpdate: StateUpdate) => {
             //clone state.games before you mutate
             state.games = [...state.games]
             // find game with GameId
-            const game = findGame(state, stateUpdate.payload.gameId)
+            let game = findGame(state, stateUpdate.payload.gameId)
             // clone game before you mutate
-            const clonedGame = { ...game }
+            let clonedGame = { ...game }
             // populate player[gamePiece] of game with UserId
             game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
 
@@ -62,6 +70,23 @@ export const updateState = (stateUpdate: StateUpdate) => {
             state.games = [...state.games]
             state.games.push(stateUpdate.payload)
             break
+        case Action.makeAMove:
+            state.games = [...state.games]
+            game = findGame(state, stateUpdate.payload.gameId)
+            clonedGame = { ...game }
+            game.board.push(stateUpdate.payload.move)
+            break
+        case Action.switchWhoseTurn:
+            state.games = [...state.games]
+            game = findGame(state, stateUpdate.payload.gameId)
+            clonedGame = { ...game }
+            otherPlayer(stateUpdate.payload.whoseTurn)
+
+            // game.whoseTurn = 
+            break
+
+
+
 
     }
     return state

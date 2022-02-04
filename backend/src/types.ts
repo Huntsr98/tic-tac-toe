@@ -46,6 +46,7 @@ export enum Action {
     join = 'join',
     addGame = 'addGame',
     makeAMove = 'makeAMove',
+    switchWhoseTurn = 'switchWhoseTurn',
 }
 
 export type UpdateStateJoin = {
@@ -63,11 +64,24 @@ export type UpdateStateAddGame = {
 
 export type UpdateStateMakeAMove = {
     action: Action.makeAMove,
-    payload: unknown
+    payload: {
+        gameId: GameId
+        move: Move
+    }
+}
+
+export type UpdateSwitchWhoseTurn = {
+    action: Action.switchWhoseTurn,
+    payload: {
+        gameId: GameId
+        
+        whoseTurn: WhoseTurn
+    }
+
 }
 
 
 
-export type StateUpdate = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove
+export type StateUpdate = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove | UpdateSwitchWhoseTurn
 
 

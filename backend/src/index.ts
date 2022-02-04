@@ -145,7 +145,6 @@ export const makeAMove = (req, res) => {
 
 
 
-<<<<<<< HEAD
     // send serverResponse
 
 
@@ -154,8 +153,6 @@ export const makeAMove = (req, res) => {
 }
 app.post('/make-a-move', makeAMove)
 
-=======
->>>>>>> d6788bfa5688fdcc8e752fc67fe7d87b483f73a2
 //make /move endpoint
 
 

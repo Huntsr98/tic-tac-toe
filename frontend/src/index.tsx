@@ -5,8 +5,15 @@ import React, { useState } from 'react'
 
 
 const BoardSquare = ({ gamePiece }: { gamePiece: MaybeGamePiece }) => {
+    const styles = {
+        width: config.boardSquareWidth + 'px',
+        height: config.boardSquareHeight + 'px',
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        borderColor: 'black',
+      
+    }
 
-    return <div>
+    return <div  style={styles} className="boardSquare">
         {gamePiece}
     </div>
 }
@@ -21,7 +28,7 @@ const Button = ({ cb }: { cb: () => void }) => {
 let interval: any
 const BoardComponent = ({ state }: { state: State }) => {
     let activeBoardColor
-
+   
     if (checkForWin(state.gamePiece, state.winner) === false) {
         if (state.isItMyTurn) {
             activeBoardColor = Color.green
@@ -48,7 +55,12 @@ const BoardComponent = ({ state }: { state: State }) => {
     })
     
 
-    return <div style={Color = activeBoardColor}>
+    return <div style={{
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        borderColor: 'black',
+        width: config.boardWidth + 'px',
+        height: config.boardHeight + 'px'
+    }}>
         {theBoard}
     </div>
 
@@ -56,9 +68,10 @@ const BoardComponent = ({ state }: { state: State }) => {
 }
 const RowComponent = ({row}:{row: Row}) => {
     const theRow = row.map((maybeMove) => {
+
         return <BoardSquare gamePiece={maybeMove.type}></BoardSquare>
     })
-    return <div>
+    return <div style={{display: 'flex'}} className="row">
         {theRow}
     </div>
 }
@@ -84,7 +97,7 @@ export const buildBoard = (moves: Move[]): Board => {
 
     const indexRowOne: Row = [
         {
-            type: null,
+            type: GamePiece.X,
             x: 0,
             y: 0,
         },
@@ -128,7 +141,7 @@ export const buildBoard = (moves: Move[]): Board => {
             y: 2,
         },
         {
-            type: null,
+            type: GamePiece.O,
             x: 2,
             y: 2,
         },

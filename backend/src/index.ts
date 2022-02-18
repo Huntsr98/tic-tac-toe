@@ -1,9 +1,9 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { convertStateToResponse, findGame, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
-import { Action, Game, GameId, GamePiece, ServerState, UserId, WhoseTurn } from './types';
+import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse } from './types';
 import { v4 as uuidv4 } from 'uuid'
-import { ServerResponse } from 'http';
+// import { Server, ServerResponse } from 'http';
 import { checkForWin } from './check-for-win';
 
 // import state, updateState, Action from new file called update-state?
@@ -87,31 +87,45 @@ app.post('/join', (req, res) => {
 //     game: serverResponse.gameId
 // }
 
-export const makeAMove = (req, res) => {
+const isItMyTurn = (userId: UserId, players: UserPlayerIds, whoseTurn: WhoseTurn): boolean => {
+    // which player matches the userId? 
+    let userPiece
+    if (players.X === userId) {
+        userPiece = 'X'
+    }
+    else if (players.O === userId) {
+        userPiece = 'O'
+    }
+
+    // if the player matches whoseTurn, it is my turn
+
+    return (userPiece === whoseTurn)
+}
+
+export const makeAMove = (
+    req: {
+        body: {
+            userId: UserId,
+            gameId: GameId,
+            coordinates: {
+                x: number,
+                y: number
+            }
+        }
+    },
+    res: {
+        send: (serverResponse: ServerResponse) => unknown
+    }
+) => {
     console.log(req.body)
 
     // find gameOnly
-    let gameOnly
-    gameOnly = findGame(getState(), req.body.gameId)
+    let gameOnly = findGame(getState(), req.body.gameId)
     // this is undefined???
     console.log(gameOnly)
 
-    const isItMyTurn = (userId: UserId, players, whoseTurn: WhoseTurn): boolean => {
-        // which player matches the userId? 
-        let userPiece
-        if (players.X === userId) {
-            userPiece = 'X'
-        }
-        else if (players.O === userId) {
-            userPiece = 'O'
-        }
 
-        // if the player matches whoseTurn, it is my turn
-        
-        return (userPiece === whoseTurn) 
-    }
 
-    
     if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
         const serverState: ServerState = updateState({
             action: Action.makeAMove,
@@ -125,25 +139,27 @@ export const makeAMove = (req, res) => {
             }
         })
         gameOnly = findGame(serverState, req.body.gameId)
+
+        const winner = checkForWin(req.body.userId, gameOnly.board)
+        // check for winner. 
+        if (winner) {
+
+            // declare winner, who is the player, who just made a move
+        } else {
+            //switch turns
+        }
+        // if there is no winner, switch turns.
+
+
     } else {
         gameOnly = findGame(getState(), req.body.gameId)
     } // do I still need this else? 
 
 
-    const winner = checkForWin(gameOnly.whoseTurn, gameOnly.board)
-    // check for winner. 
-    if (winner) {
-        // declare winner
-    } else {
-        //switch turns
-    }
-    // if there is no winner, switch turns.
 
-    const serverResponse = convertStateToResponse(gameOnly, req.body.move.userId)
+
+    const serverResponse: ServerResponse = convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
-
-
-
 
     // send serverResponse
 

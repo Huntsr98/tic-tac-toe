@@ -41,14 +41,14 @@ export const gameFactory = (): Game => {
         },
         board: [],
         whoseTurn: WhoseTurn.X,
-        gameId: uuidv4(),
+        gameId: uuidv4() as GameId,
         winner: null
     }
 }
 
 export const getState = (): ServerState => state
 
-export const otherPlayer = (whoAmI) => {
+export const otherPlayer = (whoAmI: WhoseTurn) => {
     if (whoAmI === WhoseTurn.X) {
         whoAmI = WhoseTurn.O
     }  else if (whoAmI === WhoseTurn.O) {
@@ -114,7 +114,7 @@ export const updateState = (stateUpdate: StateUpdate) => {
 //     // logger(state)
 // }
 
-export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
+export const convertStateToResponse = (gameOnly: Game, userId: UserId):ServerResponse => {
     const { players, whoseTurn, board, ...remainingState } = gameOnly
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
@@ -123,17 +123,20 @@ export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
 
     const findGamePiece = (): GamePiece => {
         let gamePiece
-        if (userId === whoseTurn) {
-            gamePiece = whoseTurn
-        } else {
+        if (userId === players.X && whoseTurn === 'X') {
+            gamePiece = GamePiece.X
+        } else if (userId === players.O && whoseTurn === 'O') {
+            gamePiece = GamePiece.O
+        }
+        else {
             if (players.X === userId) {
-                gamePiece = 'O'
+                gamePiece = GamePiece.O
             }
             else if (players.O === userId) {
-                gamePiece = 'X'
+                gamePiece = GamePiece.X
             }
-            return gamePiece
         }
+        return gamePiece
     }
 
     const gamePiece: GamePiece = findGamePiece()

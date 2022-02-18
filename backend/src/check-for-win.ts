@@ -1,13 +1,12 @@
-import { Move, WhoseTurn } from "./types"
+import { Move, UserId, WhoseTurn } from "./types"
 
-export const extractPlayersMoves = (moves, whoseTurn) => {
-    const sortMoves = (move) => {
-        if (moves.type === whoseTurn) {
+export const extractPlayersMoves = (moves: Move[], userId: UserId) => {
+    const sortMoves = (move: Move) => {
+        if (move.userId === userId) {
             return move
         }
     }
-    const playerMoves = moves.map(sortMoves)
-    return playerMoves
+    return moves.filter(sortMoves)
 }
 
 export const checkLength = (array) => {
@@ -23,73 +22,102 @@ export const checkForStraightWin = (playerMoves, direction): boolean => {
 
     const separatedMoves = (acc, move) => {
         let sortBy
-        if (direction === 'horizontal') {
+        if (direction === 'vertical') {
             sortBy = move.x
-        } else if (direction === 'vertical') {
+        } else if (direction === 'horizontal') {
             sortBy = move.y
         }
 
         if (sortBy === 0) {
-            acc.zeroes.push(0)
+            acc.zeroes.push(move)
         } else if (sortBy === 1) {
-            acc.ones.push(1)
+            acc.ones.push(move)
         } else if (sortBy === 2) {
-            acc.twos.push(2)
+            acc.twos.push(move)
         }
         return acc
     }
+
 
     const results = playerMoves.reduce(separatedMoves, {
         zeroes: [],
         ones: [],
         twos: []
     })
+    console.log(results)
 
     const resultsValues = Object.values(results)
     return resultsValues.some(checkLength)
 }
 
+
 export const checkForDiagonalWin = (playerMoves) => {
-   
+
+    const findSet1 = (move: Move) => {
+        if (move.x === 2 && move.y === 0) {
+            return move
+        } else if (move.x === 1 && move.y === 1) {
+            return move
+        } else if (move.x === 0 && move.y === 2) {
+            return move
+        }
+    }
+
+    const findSet2 = (move: Move) => {
+        if (move.x === 0 && move.y === 0) {
+            return move
+        } else if (move.x === 1 && move.y === 1) {
+            return move
+        } else if (move.x === 2 && move.y === 2) {
+            return move
+        }
+    }
+
+   let winner = false
+
+    console.log(playerMoves.filter(findSet1))
+    console.log(playerMoves.filter(findSet2))
+
+    if (playerMoves.filter(findSet1).length === 3 || (playerMoves.filter(findSet2).length) === 3) {
+        winner = true
+    }
+
+    return winner
+
     // push xs into xs[]
     // push ys into ys[]
-    const onlyXs = (move) => {
-        return move.x
-    }
-    const onlyYs = (move) => {
-        return move.y
-    }
-    const xs: [] = playerMoves.map(onlyXs)
-    const ys: [] = playerMoves.map(onlyYs)
+    // const onlyXs = (move) => {
+    //     return move.x
+    // }
+    // const onlyYs = (move) => {
+    //     return move.y
+    // }
+    // const xs: [] = playerMoves.map(onlyXs)
+    // const ys: [] = playerMoves.map(onlyYs)
 
-    // if length of xs is >= 3, and xs increments by one, return winner
-    // if length of ys is >= 3, and ys increments by one, return winner
-    const uniqueXs =  [...new Set(xs)]
-    const uniqueYs =  [...new Set(ys)]
+    // // if length of xs is >= 3, and xs increments by one, return winner
+    // // if length of ys is >= 3, and ys increments by one, return winner
+    // const uniqueXs =  [...new Set(xs)]
+    // const uniqueYs =  [...new Set(ys)]
 
-    let winner = false
-    if (uniqueXs.length >= 3) {
-        winner = true
-    }
-    if (uniqueYs.length >= 3) {
-        winner = true
-    }
-    return winner
+ 
+    // if (uniqueXs.length >= 3) {
+    //     winner = true
+    // }
+    // if (uniqueYs.length >= 3) {
+    //     winner = true
+    // }
+
 
 }
 
-export const checkForWin = (whoseTurn: WhoseTurn, moves: Move[]): WhoseTurn | null => {
+export const checkForWin = (userId: UserId, moves: Move[]): boolean => {
 
-    const playerMoves = extractPlayersMoves(moves, whoseTurn)
+    const playerMoves = extractPlayersMoves(moves, userId)
+    // console.log(playerMoves)
 
-    if (
-        checkForStraightWin(playerMoves, 'horizontal')
+    return checkForStraightWin(playerMoves, 'horizontal')
         || checkForStraightWin(playerMoves, 'vertical')
         || checkForDiagonalWin(playerMoves)
-    ) {
-        return whoseTurn
-    } else {
-        return null
-    }
 
 }

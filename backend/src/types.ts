@@ -11,15 +11,18 @@ export enum GamePiece {
 export type Move = {
     x: number,
     y: number,
-    userId: string
+    userId: UserId
 }
-export type UserId = string
-export type GameId = string
+
+export type UserPlayerIds = {
+    X: null | UserId,
+    O: null | UserId
+}
+
+export type UserId = 'userId'
+export type GameId = 'gameId'
 export type Game = {
-    players: {
-        X: null | UserId,
-        O: null | UserId
-    }
+    players: UserPlayerIds
     whoseTurn: WhoseTurn
     gameId: GameId
     board: Move[]

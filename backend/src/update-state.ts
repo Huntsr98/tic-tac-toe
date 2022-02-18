@@ -1,5 +1,6 @@
 import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove } from "./types"
 import { v4 as uuidv4 } from 'uuid';
+import { extractPlayersMoves } from "./check-for-win";
 
 
 
@@ -40,13 +41,20 @@ export const gameFactory = (): Game => {
         },
         board: [],
         whoseTurn: WhoseTurn.X,
-        gameId: uuidv4(),
+        gameId: uuidv4() as GameId,
         winner: null
     }
 }
 
 export const getState = (): ServerState => state
 
+export const otherPlayer = (whoAmI: WhoseTurn) => {
+    if (whoAmI === WhoseTurn.X) {
+        whoAmI = WhoseTurn.O
+    }  else if (whoAmI === WhoseTurn.O) {
+        whoAmI = WhoseTurn.X
+    }
+}
 
 
 export const updateState = (stateUpdate: StateUpdate) => {
@@ -56,9 +64,9 @@ export const updateState = (stateUpdate: StateUpdate) => {
             //clone state.games before you mutate
             state.games = [...state.games]
             // find game with GameId
-            const game = findGame(state, stateUpdate.payload.gameId)
+            let game = findGame(state, stateUpdate.payload.gameId)
             // clone game before you mutate
-            const clonedGame = { ...game }
+            let clonedGame = { ...game }
             // populate player[gamePiece] of game with UserId
             game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
 
@@ -68,6 +76,23 @@ export const updateState = (stateUpdate: StateUpdate) => {
             state.games = [...state.games]
             state.games.push(stateUpdate.payload)
             break
+        case Action.makeAMove:
+            state.games = [...state.games]
+            game = findGame(state, stateUpdate.payload.gameId)
+            clonedGame = { ...game }
+            game.board.push(stateUpdate.payload.move)
+            break
+        case Action.switchWhoseTurn:
+            state.games = [...state.games]
+            game = findGame(state, stateUpdate.payload.gameId)
+            clonedGame = { ...game }
+            otherPlayer(stateUpdate.payload.whoseTurn)
+
+            // game.whoseTurn = 
+            break
+
+
+
 
     }
     return state
@@ -89,7 +114,7 @@ export const updateState = (stateUpdate: StateUpdate) => {
 //     // logger(state)
 // }
 
-export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
+export const convertStateToResponse = (gameOnly: Game, userId: UserId):ServerResponse => {
     const { players, whoseTurn, board, ...remainingState } = gameOnly
     // explode out the contents of remainingState and capture them in a new object
     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
@@ -98,17 +123,20 @@ export const convertStateToResponse = (gameOnly: Game, userId: UserId) => {
 
     const findGamePiece = (): GamePiece => {
         let gamePiece
-        if (userId === whoseTurn) {
-            gamePiece = whoseTurn
-        } else {
+        if (userId === players.X && whoseTurn === 'X') {
+            gamePiece = GamePiece.X
+        } else if (userId === players.O && whoseTurn === 'O') {
+            gamePiece = GamePiece.O
+        }
+        else {
             if (players.X === userId) {
-                gamePiece = 'O'
+                gamePiece = GamePiece.O
             }
             else if (players.O === userId) {
-                gamePiece = 'X'
+                gamePiece = GamePiece.X
             }
-            return gamePiece
         }
+        return gamePiece
     }
 
     const gamePiece: GamePiece = findGamePiece()

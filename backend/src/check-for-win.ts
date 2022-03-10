@@ -1,5 +1,11 @@
 import { Move, UserId, WhoseTurn } from "./types"
 
+type SeparatedMovesAcc = {
+    zeroes: Move[],
+    ones: Move[],
+    twos: Move[]
+}
+
 export const extractPlayersMoves = (moves: Move[], userId: UserId) => {
     const sortMoves = (move: Move) => {
         if (move.userId === userId) {
@@ -9,7 +15,7 @@ export const extractPlayersMoves = (moves: Move[], userId: UserId) => {
     return moves.filter(sortMoves)
 }
 
-export const checkLength = (array) => {
+export const checkLength = (array: Move[]) => {
     let winner = false
     if (array.length === 3) {
         winner = true
@@ -17,10 +23,9 @@ export const checkLength = (array) => {
     return winner
 }
 
+export const checkForStraightWin = (playerMoves: Move[], direction: string): boolean => {
 
-export const checkForStraightWin = (playerMoves, direction): boolean => {
-
-    const separatedMoves = (acc, move) => {
+    const separatedMoves = (acc: SeparatedMovesAcc, move: Move) => {
         let sortBy
         if (direction === 'vertical') {
             sortBy = move.x
@@ -44,14 +49,14 @@ export const checkForStraightWin = (playerMoves, direction): boolean => {
         ones: [],
         twos: []
     })
-    console.log(results)
+
 
     const resultsValues = Object.values(results)
     return resultsValues.some(checkLength)
 }
 
 
-export const checkForDiagonalWin = (playerMoves) => {
+export const checkForDiagonalWin = (playerMoves: Move[]) => {
 
     const findSet1 = (move: Move) => {
         if (move.x === 2 && move.y === 0) {
@@ -75,8 +80,6 @@ export const checkForDiagonalWin = (playerMoves) => {
 
    let winner = false
 
-    console.log(playerMoves.filter(findSet1))
-    console.log(playerMoves.filter(findSet2))
 
     if (playerMoves.filter(findSet1).length === 3 || (playerMoves.filter(findSet2).length) === 3) {
         winner = true
@@ -113,7 +116,7 @@ export const checkForDiagonalWin = (playerMoves) => {
 
 export const checkForWin = (userId: UserId, moves: Move[]): boolean => {
 
-    const playerMoves = extractPlayersMoves(moves, userId)
+    const playerMoves: Move[] = extractPlayersMoves(moves, userId)
     // console.log(playerMoves)
 
     return checkForStraightWin(playerMoves, 'horizontal')

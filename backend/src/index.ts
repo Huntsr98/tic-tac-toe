@@ -1,9 +1,8 @@
 import * as express from 'express'
 import * as cors from 'cors'
-import { convertStateToResponse, findGame, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
+import { convertStateToResponse, utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
 import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse } from './types';
 import { v4 as uuidv4 } from 'uuid'
-// import { Server, ServerResponse } from 'http';
 import { checkForWin } from './check-for-win';
 
 // import state, updateState, Action from new file called update-state?
@@ -68,7 +67,7 @@ app.post('/join', (req, res) => {
         }
     })
 
-    const gameOnly: Game = findGame(serverState, game.gameId)
+    const gameOnly: Game = utils.findGame(serverState, game.gameId)
     const serverResponse = convertStateToResponse(gameOnly, userId)
 
     res.send(serverResponse)
@@ -111,18 +110,19 @@ export const makeAMove = (
                 x: number,
                 y: number
             }
+            // isItMyTurn: boolean
         }
     },
     res: {
         send: (serverResponse: ServerResponse) => unknown
     }
 ) => {
-    console.log(req.body)
+
 
     // find gameOnly
-    let gameOnly = findGame(getState(), req.body.gameId)
+    let gameOnly = utils.findGame(getState(), req.body.gameId)
     // this is undefined???
-    console.log(gameOnly)
+ 
 
 
 
@@ -138,7 +138,7 @@ export const makeAMove = (
                 },
             }
         })
-        gameOnly = findGame(serverState, req.body.gameId)
+        gameOnly = utils.findGame(serverState, req.body.gameId)
 
         const winner = checkForWin(req.body.userId, gameOnly.board)
         // check for winner. 
@@ -152,11 +152,11 @@ export const makeAMove = (
 
 
     } else {
-        gameOnly = findGame(getState(), req.body.gameId)
+        gameOnly = utils.findGame(getState(), req.body.gameId)
     } // do I still need this else? 
 
 
-
+    console.log({gameOnly})
 
     const serverResponse: ServerResponse = convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
@@ -173,5 +173,5 @@ app.post('/make-a-move', makeAMove)
 
 
 app.listen(port, () => {
-    logger(`Example app listening on port ${port}!`)
+    // logger(`Example app listening on port ${port}!`)
 });

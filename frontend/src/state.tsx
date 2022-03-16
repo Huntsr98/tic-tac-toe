@@ -48,7 +48,7 @@ export type Config = {
     buttonColor: Color.red
     api: {
         join: `/join`
-
+        makeAMove: '/makeAMove'
     }
     env: Env
     port: number
@@ -62,7 +62,7 @@ export const config: Config = {
         myTurn: Color.green,
         notMyTurn: Color.red
     },
-    locationX: 100,
+    locationX: 100, 
     locationY: 100,
     boardSquareImage: {
         X: GamePiece.X, // image of an X?
@@ -72,7 +72,8 @@ export const config: Config = {
     boardSquareHeight: boardDimension / 3,
     buttonColor: Color.red,
     api: {
-        join: `/join`
+        join: `/join`,
+        makeAMove: '/makeAMove'
     },
     env: Env.dev,
     port: 3000

@@ -1,6 +1,6 @@
 import * as express from 'express'
 import * as cors from 'cors'
-import { convertStateToResponse, utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
+import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
 import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
@@ -68,7 +68,7 @@ app.post('/join', (req, res) => {
     })
 
     const gameOnly: Game = utils.findGame(serverState, game.gameId)
-    const serverResponse = convertStateToResponse(gameOnly, userId)
+    const serverResponse = utils.convertStateToResponse(gameOnly, userId)
 
     res.send(serverResponse)
 })
@@ -158,7 +158,7 @@ export const makeAMove = (
 
     console.log({gameOnly})
 
-    const serverResponse: ServerResponse = convertStateToResponse(gameOnly, req.body.userId)
+    const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
 
     // send serverResponse

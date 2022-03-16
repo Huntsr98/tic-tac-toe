@@ -47,7 +47,7 @@ export const utils = {
             return {
                 x: move.x,
                 y: move.y,
-                type: getPlayersPiece(gameOnly, move.userId)
+                userId: move.userId
     
             }
         })

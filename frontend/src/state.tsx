@@ -1,3 +1,4 @@
+import { buildBoard } from "."
 
 export enum Env {
     dev = 'dev',
@@ -29,7 +30,6 @@ export type Board = [
 const port = 5000 //placeholder
 
 
-
 export type Config = {
     boardHeight: number
     boardWidth: number
@@ -37,6 +37,8 @@ export type Config = {
         myTurn: Color.green,
         notMyTurn: Color.red
     }
+    locationX:number 
+    locationY: number
     boardSquareImage: {
         X: GamePiece.X
         O: GamePiece.O
@@ -46,12 +48,12 @@ export type Config = {
     buttonColor: Color.red
     api: {
         join: `/join`
-
+        makeAMove: '/makeAMove'
     }
     env: Env
     port: number
 }
-const boardDimension = 900
+const boardDimension = 300
 
 export const config: Config = {
     boardHeight: boardDimension,
@@ -60,6 +62,8 @@ export const config: Config = {
         myTurn: Color.green,
         notMyTurn: Color.red
     },
+    locationX: 100, 
+    locationY: 100,
     boardSquareImage: {
         X: GamePiece.X, // image of an X?
         O: GamePiece.O // image of an O?
@@ -68,7 +72,8 @@ export const config: Config = {
     boardSquareHeight: boardDimension / 3,
     buttonColor: Color.red,
     api: {
-        join: `/join`
+        join: `/join`,
+        makeAMove: '/makeAMove'
     },
     env: Env.dev,
     port: 3000

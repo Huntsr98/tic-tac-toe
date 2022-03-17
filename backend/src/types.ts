@@ -36,7 +36,8 @@ export type ServerState = {
 export type BrowserMove = {
     x: number
     y: number
-    type: GamePiece
+    userId: UserId
+    // type: GamePiece
 }
 
 export type ServerResponse = {

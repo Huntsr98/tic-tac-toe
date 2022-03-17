@@ -2,6 +2,59 @@ import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, St
 import { v4 as uuidv4 } from 'uuid';
 import { extractPlayersMoves } from "./check-for-win";
 
+export const getPlayersPiece = (game: Game, playerId: string) => {
+    if (game.players.O === playerId) {
+        return GamePiece.O
+    } else {
+        return GamePiece.X
+    }
+}
+
+export const utils = {
+    findGame: (state: ServerState, gameId: GameId): Game => {
+        return state.games.find((game) => {
+            return game.gameId === gameId
+        })
+    },
+    convertStateToResponse: (gameOnly: Game, userId: UserId):ServerResponse => {
+        const { players, whoseTurn, board, ...remainingState } = gameOnly
+        // explod..e out the contents of remainingState and capture them in a new object
+        // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
+        // players in ServerResponse
+        // AKA we're taking players out of state
+    
+        const findGamePiece = (): GamePiece => {
+            let gamePiece
+            if (userId === players.X && whoseTurn === 'X') {
+                gamePiece = GamePiece.X
+            } else if (userId === players.O && whoseTurn === 'O') {
+                gamePiece = GamePiece.O
+            }
+            else {
+                if (players.X === userId) {
+                    gamePiece = GamePiece.O
+                } 
+                else if (players.O === userId) {
+                    gamePiece = GamePiece.X
+                }
+            }
+            return gamePiece
+        }
+    
+        const gamePiece: GamePiece = findGamePiece()
+    
+        const browserBoard = board.map((move: Move): BrowserMove => {
+            return {
+                x: move.x,
+                y: move.y,
+                userId: move.userId
+    
+            }
+        })
+        const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
+        return serverResponse
+    }
+}
 
 
 
@@ -21,18 +74,8 @@ export const findWaitingGame = (games: Games): Game | undefined => {
     return games.find((game) => !game.players.O || !game.players.X)
 }
 
-export const findGame = (state: ServerState, gameId: GameId): Game => {
-    return state.games.find((game) => {
-        return game.gameId === gameId
-    })
-}
-export const getPlayersPiece = (game: Game, playerId: string) => {
-    if (game.players.O === playerId) {
-        return GamePiece.O
-    } else {
-        return GamePiece.X
-    }
-}
+
+
 export const gameFactory = (): Game => {
     return {
         players: {
@@ -64,7 +107,7 @@ export const updateState = (stateUpdate: StateUpdate) => {
             //clone state.games before you mutate
             state.games = [...state.games]
             // find game with GameId
-            let game = findGame(state, stateUpdate.payload.gameId)
+            let game = utils.findGame(state, stateUpdate.payload.gameId)
             // clone game before you mutate
             let clonedGame = { ...game }
             // populate player[gamePiece] of game with UserId
@@ -78,13 +121,13 @@ export const updateState = (stateUpdate: StateUpdate) => {
             break
         case Action.makeAMove:
             state.games = [...state.games]
-            game = findGame(state, stateUpdate.payload.gameId)
+            game = utils.findGame(state, stateUpdate.payload.gameId)
             clonedGame = { ...game }
             game.board.push(stateUpdate.payload.move)
             break
         case Action.switchWhoseTurn:
             state.games = [...state.games]
-            game = findGame(state, stateUpdate.payload.gameId)
+            game = utils.findGame(state, stateUpdate.payload.gameId)
             clonedGame = { ...game }
             otherPlayer(stateUpdate.payload.whoseTurn)
 
@@ -114,41 +157,41 @@ export const updateState = (stateUpdate: StateUpdate) => {
 //     // logger(state)
 // }
 
-export const convertStateToResponse = (gameOnly: Game, userId: UserId):ServerResponse => {
-    const { players, whoseTurn, board, ...remainingState } = gameOnly
-    // explode out the contents of remainingState and capture them in a new object
-    // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
-    // players in ServerResponse
-    // AKA we're taking players out of state
+// export const convertStateToResponse = (gameOnly: Game, userId: UserId):ServerResponse => {
+//     const { players, whoseTurn, board, ...remainingState } = gameOnly
+//     // explode out the contents of remainingState and capture them in a new object
+//     // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
+//     // players in ServerResponse
+//     // AKA we're taking players out of state
 
-    const findGamePiece = (): GamePiece => {
-        let gamePiece
-        if (userId === players.X && whoseTurn === 'X') {
-            gamePiece = GamePiece.X
-        } else if (userId === players.O && whoseTurn === 'O') {
-            gamePiece = GamePiece.O
-        }
-        else {
-            if (players.X === userId) {
-                gamePiece = GamePiece.O
-            }
-            else if (players.O === userId) {
-                gamePiece = GamePiece.X
-            }
-        }
-        return gamePiece
-    }
+//     const findGamePiece = (): GamePiece => {
+//         let gamePiece
+//         if (userId === players.X && whoseTurn === 'X') {
+//             gamePiece = GamePiece.X
+//         } else if (userId === players.O && whoseTurn === 'O') {
+//             gamePiece = GamePiece.O
+//         }
+//         else {
+//             if (players.X === userId) {
+//                 gamePiece = GamePiece.O
+//             }
+//             else if (players.O === userId) {
+//                 gamePiece = GamePiece.X
+//             }
+//         }
+//         return gamePiece
+//     }
 
-    const gamePiece: GamePiece = findGamePiece()
+//     const gamePiece: GamePiece = findGamePiece()
 
-    const browserBoard = board.map((move: Move): BrowserMove => {
-        return {
-            x: move.x,
-            y: move.y,
-            type: getPlayersPiece(gameOnly, move.userId)
+//     const browserBoard = board.map((move: Move): BrowserMove => {
+//         return {
+//             x: move.x,
+//             y: move.y,
+//             type: getPlayersPiece(gameOnly, move.userId)
 
-        }
-    })
-    const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
-    return serverResponse
-}
+//         }
+//     })
+//     const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
+//     return serverResponse
+// } 

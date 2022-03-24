@@ -1,9 +1,10 @@
 import * as express from 'express'
 import * as cors from 'cors'
-import { convertStateToResponse, utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
+import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
 import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
+import { read } from 'fs';
 
 // import state, updateState, Action from new file called update-state?
 
@@ -68,7 +69,7 @@ app.post('/join', (req, res) => {
     })
 
     const gameOnly: Game = utils.findGame(serverState, game.gameId)
-    const serverResponse = convertStateToResponse(gameOnly, userId)
+    const serverResponse = utils.convertStateToResponse(gameOnly, userId)
 
     res.send(serverResponse)
 })
@@ -106,7 +107,7 @@ export const makeAMove = (
         body: {
             userId: UserId,
             gameId: GameId,
-            coordinates: {
+            move: {
                 x: number,
                 y: number
             }
@@ -117,14 +118,9 @@ export const makeAMove = (
         send: (serverResponse: ServerResponse) => unknown
     }
 ) => {
-
-
     // find gameOnly
     let gameOnly = utils.findGame(getState(), req.body.gameId)
     // this is undefined???
- 
-
-
 
     if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
         const serverState: ServerState = updateState({
@@ -132,8 +128,8 @@ export const makeAMove = (
             payload: {
                 gameId: req.body.gameId,
                 move: {
-                    x: req.body.coordinates.x,
-                    y: req.body.coordinates.y,
+                    x: req.body.move.x,
+                    y: req.body.move.y,
                     userId: req.body.userId
                 },
             }
@@ -142,23 +138,40 @@ export const makeAMove = (
 
         const winner = checkForWin(req.body.userId, gameOnly.board)
         // check for winner. 
-        if (winner) {
 
-            // declare winner, who is the player, who just made a move
+        let newServerState: ServerState 
+
+        if (winner) {            
+            newServerState = updateState({
+                action: Action.updateWinner, 
+                payload: {
+                    gameId: req.body.gameId,
+                    winner: req.body.userId
+                }
+            })
+   
         } else {
-            //switch turns
-        }
-        // if there is no winner, switch turns.
+            newServerState = updateState({
+                action: Action.switchWhoseTurn,
+                payload: {
+                    gameId: req.body.gameId,
+                    whoseTurn: gameOnly.whoseTurn
+                }
+            })
 
+        }
+
+        // if there is no winner, switch turns.
+        gameOnly = utils.findGame(newServerState, req.body.gameId)
 
     } else {
         gameOnly = utils.findGame(getState(), req.body.gameId)
     } // do I still need this else? 
 
 
-    console.log({gameOnly})
+    console.log({ gameOnly })
 
-    const serverResponse: ServerResponse = convertStateToResponse(gameOnly, req.body.userId)
+    const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
 
     // send serverResponse

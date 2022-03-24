@@ -23,7 +23,7 @@ describe('index.ts', () => {
             body: {
                 userId: '12345' as UserId,
                 gameId: '56789' as GameId,
-                coordinates: { x: 1, y: 2 }
+                move: { x: 1, y: 2 }
             }
         }
     }

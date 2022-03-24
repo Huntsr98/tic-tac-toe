@@ -19,10 +19,15 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
         const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
         const state = formState(response.data)
         setState(state)
+        // boardSquareImage(state)
     }
 
 
 }
+// const boardSquareImage = (state: State) => {
+//     let backgroundImage
+//     if (state.)
+//     }
 
 const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
     const styles = {
@@ -30,6 +35,7 @@ const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: 
         height: config.boardSquareHeight + 'px',
         border: '1px solid rgba(0, 0, 0, 0.05)',
         borderColor: 'black',
+        // backgroundImage: config.boardSquareImage.
 
     }
     const cb = () => {
@@ -172,12 +178,12 @@ export const buildBoard = (moves: Move[]): Board => {
 const formState = (response: ServerResponse): State => {
     return {
         gameId: response.gameId,
-        userId: response.userId,
+        userId: response.userId,  //this can be viewed by the user...  Possible security threat?
         gamePiece: response.gamePiece,
         boardColor: Color.green,
         board: response.board,
         isItMyTurn: isItMyTurn(response.whoseTurn, response.gamePiece),
-        winner: response.gamePiece
+        winner: response.winner
     }
 
 }

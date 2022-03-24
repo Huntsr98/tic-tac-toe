@@ -75,12 +75,12 @@ app.post('/join', (req, res) => {
 
 // sample request looks like this: 
 // const req = {
-//     coordinates: { x: 1, y: 2 },
+//     move: { x: 1, y: 2 },
 //     userId: '12345',
 //     gameId: '56789',
 //     isItMyTurn: true
 // }
-//     coordinates: {x, y}
+//     move: {x, y}
 //     userId: serverResponse.userId
 //     gamePiece: serverResponse.gamePiece
 //     game: serverResponse.gameId
@@ -106,7 +106,7 @@ export const makeAMove = (
         body: {
             userId: UserId,
             gameId: GameId,
-            coordinates: {
+            move: {
                 x: number,
                 y: number
             }
@@ -132,8 +132,8 @@ export const makeAMove = (
             payload: {
                 gameId: req.body.gameId,
                 move: {
-                    x: req.body.coordinates.x,
-                    y: req.body.coordinates.y,
+                    x: req.body.move.x,
+                    y: req.body.move.y,
                     userId: req.body.userId
                 },
             }

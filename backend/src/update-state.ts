@@ -16,13 +16,13 @@ export const utils = {
             return game.gameId === gameId
         })
     },
-    convertStateToResponse: (gameOnly: Game, userId: UserId):ServerResponse => {
+    convertStateToResponse: (gameOnly: Game, userId: UserId): ServerResponse => {
         const { players, whoseTurn, board, ...remainingState } = gameOnly
         // explod..e out the contents of remainingState and capture them in a new object
         // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
         // players in ServerResponse
         // AKA we're taking players out of state
-    
+
         const findGamePiece = (): GamePiece => {
             let gamePiece
             if (userId === players.X && whoseTurn === 'X') {
@@ -33,23 +33,31 @@ export const utils = {
             else {
                 if (players.X === userId) {
                     gamePiece = GamePiece.O
-                } 
+                }
                 else if (players.O === userId) {
                     gamePiece = GamePiece.X
                 }
             }
             return gamePiece
         }
-    
+
         const gamePiece: GamePiece = findGamePiece()
-    
+
+
+
         const browserBoard = board.map((move: Move): BrowserMove => {
-            return {
+            const browserMove: BrowserMove = {
                 x: move.x,
                 y: move.y,
-                userId: move.userId
-    
+                type: null
             }
+            if (move.userId === gameOnly.players.X) {
+                browserMove.type = GamePiece.X
+            } else {
+                browserMove.type = GamePiece.O
+            } 
+            return browserMove
+
         })
         const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
         return serverResponse
@@ -94,7 +102,7 @@ export const getState = (): ServerState => state
 export const otherPlayer = (whoAmI: WhoseTurn) => {
     if (whoAmI === WhoseTurn.X) {
         whoAmI = WhoseTurn.O
-    }  else if (whoAmI === WhoseTurn.O) {
+    } else if (whoAmI === WhoseTurn.O) {
         whoAmI = WhoseTurn.X
     }
 }
@@ -108,8 +116,6 @@ export const updateState = (stateUpdate: StateUpdate) => {
             state.games = [...state.games]
             // find game with GameId
             let game = utils.findGame(state, stateUpdate.payload.gameId)
-            // clone game before you mutate
-            let clonedGame = { ...game }
             // populate player[gamePiece] of game with UserId
             game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
 
@@ -122,20 +128,21 @@ export const updateState = (stateUpdate: StateUpdate) => {
         case Action.makeAMove:
             state.games = [...state.games]
             game = utils.findGame(state, stateUpdate.payload.gameId)
-            clonedGame = { ...game }
             game.board.push(stateUpdate.payload.move)
             break
         case Action.switchWhoseTurn:
             state.games = [...state.games]
             game = utils.findGame(state, stateUpdate.payload.gameId)
-            clonedGame = { ...game }
             otherPlayer(stateUpdate.payload.whoseTurn)
 
             // game.whoseTurn = 
             break
-
-
-
+        case Action.updateWinner:
+            state.games = [...state.games]
+            game = utils.findGame(state, stateUpdate.payload.gameId)
+            game.winner = stateUpdate.payload.winner
+            // game.whoseTurn = 
+            break
 
     }
     return state

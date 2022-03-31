@@ -33,6 +33,12 @@ export const join = async (): Promise<ServerResponse> => {
     // response.data is the new games state
 }
 
+
+export const makeAMove = async (): Promise<ServerResponse> => {
+    const userId = localStorage.getItem('userId')
+    const response = await axios.post(getUrlJoin(), { userId })
+    return response.data
+}
 /**
  * userJoin
     * Get userId from local storage

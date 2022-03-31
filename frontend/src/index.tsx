@@ -1,13 +1,42 @@
 import ReactDOM from 'react-dom';
 import { Board, Board as BoardComponent, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
-import { checkForWin, isItMyTurn, join } from './util';
+import { checkForWin, isItMyTurn, join, makeAMove } from './util';
 import React, { useState } from 'react'
+import axios from 'axios'
 
 
-const BoardSquare = ({ gamePiece }: { gamePiece: MaybeGamePiece }) => {
+// 2/27 notes
+// propDrill state from view down to clickBoardSquare
+// ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
+// Make sure what comes back from the server matches that of the state.
 
-    return <div>
-        {gamePiece}
+
+const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
+
+    const gameId = state.gameId
+    const userId = state.userId
+    if (state.isItMyTurn) {
+        const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
+        const state = formState(response.data)
+        setState(state)
+    }
+
+
+}
+
+const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
+    const styles = {
+        width: config.boardSquareWidth + 'px',
+        height: config.boardSquareHeight + 'px',
+        border: '1px solid rgba(0, 0, 0, 0.05)',
+        borderColor: 'black',
+
+    }
+    const cb = () => {
+        clickedBoardSquare(move, setState, state)
+    }
+    return <div onClick={cb} style={styles} className="boardSquare">
+        {move.type}
     </div>
 }
 
@@ -19,7 +48,7 @@ const Button = ({ cb }: { cb: () => void }) => {
 }
 
 let interval: any
-const BoardComponent = ({ state }: { state: State }) => {
+const BoardComponent = ({ state, setState }: { state: State, setState: (state: State) => void }) => {
     let activeBoardColor
 
     if (checkForWin(state.gamePiece, state.winner) === false) {
@@ -44,42 +73,33 @@ const BoardComponent = ({ state }: { state: State }) => {
     const board = buildBoard(state.board)
 
     const theBoard = board.map((row) => {
-       return <RowComponent row={row}></RowComponent>
+        return <RowComponent state={state} setState={setState} row={row}></RowComponent>
     })
-    
 
-    return <div style={Color = activeBoardColor}>
+
+    return <div style={{
+        // border: '1px solid rgba(0, 0, 0, 0.05)',
+        // borderColor: 'black',
+        width: config.boardWidth + 'px',
+        height: config.boardHeight + 'px'
+    }}>
         {theBoard}
     </div>
 
 
 }
-const RowComponent = ({row}:{row: Row}) => {
+const RowComponent = ({ row, setState, state }: { row: Row, setState: (state: State) => void, state: State }) => {
     const theRow = row.map((maybeMove) => {
-        return <BoardSquare gamePiece={maybeMove.type}></BoardSquare>
+
+        return <BoardSquare state={state} setState={setState} move={maybeMove}></BoardSquare>
     })
-    return <div>
+    return <div style={{ display: 'flex' }} className="row">
         {theRow}
     </div>
 }
-/*
-* Description
-   * Entirety of what user sees upon entering.  Top-level parent.
-* Inputs
-   * Full state
-* Behaviors
-   * Nothing
-* Parent
-   * None
-* Children
-   * Board
-       * isItMyTurn
-           * Pulls from server state
-       * boardColor
-           * Pulls from front end state
-   * Button
 
-*/
+
+
 export const buildBoard = (moves: Move[]): Board => {
 
     const indexRowOne: Row = [
@@ -138,8 +158,7 @@ export const buildBoard = (moves: Move[]): Board => {
         indexRowOne,
         indexRowTwo,
         indexRowThree
-    ] // figure out how to swap out the moves from the index rows with the argument of this function (moves) using .map
-
+    ]
 
     moves.forEach((move: Move) => {
         const x = move.x
@@ -150,6 +169,19 @@ export const buildBoard = (moves: Move[]): Board => {
     return board
 }
 
+const formState = (response: ServerResponse): State => {
+    return {
+        gameId: response.gameId,
+        userId: response.userId,
+        gamePiece: response.gamePiece,
+        boardColor: Color.green,
+        board: response.board,
+        isItMyTurn: isItMyTurn(response.whoseTurn, response.gamePiece),
+        winner: response.gamePiece
+    }
+
+}
+
 const View = () => {
     const [state, setState] = useState<State | null>(null)
     let body
@@ -158,21 +190,14 @@ const View = () => {
         body = <Button cb={
             async () => {
                 const response: ServerResponse = await join()
-                const newState: State = {
-                    gameId: response.gameId,
-                    userId: response.userId,
-                    gamePiece: response.gamePiece,
-                    boardColor: Color.green,
-                    board: response.board,
-                    isItMyTurn: isItMyTurn(response.whoseTurn, response.gamePiece),
-                    winner: response.gamePiece
-                }  //Convert response into newState
+                const newState: State = formState(response) //Convert response into newState
                 console.log({ response, newState })
                 setState(newState)
             }
         }></Button>
+
     } else {
-        body = <BoardComponent state={state}></BoardComponent>
+        body = <BoardComponent setState={setState} state={state}></BoardComponent>
     }
 
     return <div>

@@ -19,6 +19,8 @@ git diff {file name}
 
 git add {file(s) to commit}
 * adds files to next commit
+* git add . = directory we're in
+
 
 git commit -m {commit message}
 * commits added files with {commit message}
@@ -42,3 +44,5 @@ pwd
 
 ls
 * list stuff
+
+.. = go to directory above

@@ -76,12 +76,12 @@ app.post('/join', (req, res) => {
 
 // sample request looks like this: 
 // const req = {
-//     coordinates: { x: 1, y: 2 },
+//     move: { x: 1, y: 2 },
 //     userId: '12345',
 //     gameId: '56789',
 //     isItMyTurn: true
 // }
-//     coordinates: {x, y}
+//     move: {x, y}
 //     userId: serverResponse.userId
 //     gamePiece: serverResponse.gamePiece
 //     game: serverResponse.gameId

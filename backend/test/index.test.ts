@@ -51,9 +51,52 @@ describe('index.ts', () => {
             send: () => { }
         })
 
-        describe('when someone has already played in that square', () => {
-            it('should not updateState for winner', () => { })
-            it('should not updateState for switchWhoseTurn', () => { })
+        describe('when there is a conflicting move', () => {
+
+
+            it('should return conflicting move', () => {
+                const requestMock = getRequestMock()
+                const responseMock = getResponseMock()
+    
+                const game: Game = {
+                    players: {
+                        X: '12345' as UserId,
+                        O: '23456' as UserId
+                    },
+                    whoseTurn: WhoseTurn.X,
+                    gameId: '56789' as GameId,
+                    board: board,
+                    winner: null
+                }
+               
+                // const utilsFindGameSpy = jest.spyOn(utils, 'findGame')
+                const utilsCheckForConflictingMove = jest.spyOn(utils, 'checkForConflictingMove')
+
+
+                const mockServerResponse: ServerResponse = {
+                    userId: '12345' as UserId,
+                    gamePiece: GamePiece.X,
+                    whoseTurn: WhoseTurn.X,
+                    gameId: '56789' as GameId,
+                    board: browserBoard,
+                    winner: null
+                }
+                
+                const mockConflictingMove: Move = {
+                    x: 1,
+                    y: 2,
+                    userId: '23456' as UserId
+                }
+
+                // utilsFindGameSpy.mockImplementation(() => game)
+                utilsCheckForConflictingMove.mockImplementation(() => mockConflictingMove)
+                makeAMove(requestMock, responseMock)
+
+                const result = utils.checkForConflictingMove(game.board, requestMock.body.move)
+                expect(result).toEqual(mockConflictingMove)
+
+            })
+            // it('should not updateState for switchWhoseTurn', () => { })
         })
 
 

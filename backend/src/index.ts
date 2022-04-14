@@ -51,6 +51,7 @@ app.post('/join', (req, res) => {
         gameId = game.gameId
         updateState({ action: Action.addGame, payload: game })
         gamePiece = GamePiece.X
+        // updateState({action: Action.switchWhoseTurn, payload: {gameId: gameId, whoseTurn: gamePiece as unknown as WhoseTurn}})
         // if there is no existing Game, then make a new game
         // assign userId to player X inside of the new game
     } else {
@@ -124,6 +125,8 @@ export const makeAMove = (
     let gameOnly = utils.findGame(getState(), req.body.gameId)
     // this is undefined???
 
+
+    // is this in the wrong order?????
     if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
         const serverState: ServerState = updateState({
             action: Action.makeAMove,
@@ -141,11 +144,11 @@ export const makeAMove = (
         const winner = checkForWin(req.body.userId, gameOnly.board)
         // check for winner. 
 
-        const checkForConflictingMove = (moves: Move[]): Move | undefined => {
-            return moves.find((move) => {
-                req.body.move.x === move.x && req.body.move.y === move.y && move.userId
-            })
-        }
+        // const checkForConflictingMove = (moves: Move[]): Move | undefined => {
+        //     return moves.find((move) => {
+        //         req.body.move.x === move.x && req.body.move.y === move.y && move.userId
+        //     })
+        // }
 
         let newServerState: ServerState
 
@@ -154,7 +157,8 @@ export const makeAMove = (
         // and there is a userId for the move already, then 
         // const checkForConflictingMove = (boardMove: Move, playerMove: { x: number, y: number }) => {
 
-        const conflictingMove = checkForConflictingMove(gameOnly.board)
+        const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
+        // fix conflictingMove
         if (conflictingMove) {
             console.log('conflicting move!')
         } else if (winner) {
@@ -174,9 +178,23 @@ export const makeAMove = (
                     gameId: req.body.gameId,
                     whoseTurn: gameOnly.whoseTurn
                 }
-            })
+            }) 
 
         }
+
+// HW: 
+// check adding second player to existing game
+// why is it allowing two moves in the same square? 
+// only updates when you click....
+
+
+// how do you get it to update by itself???
+// clearinterval w/ (state, setstate in frontend?)
+// if (isItMyTurn(currentState) === true) {
+//     clearInterval(timerId)
+
+//     setState(currentState)
+// }
 
         // if there is no winner, switch turns.
         gameOnly = utils.findGame(newServerState, req.body.gameId)

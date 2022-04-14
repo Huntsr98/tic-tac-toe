@@ -61,6 +61,11 @@ export const utils = {
         })
         const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
         return serverResponse
+    },
+    checkForConflictingMove:(boardMoves: Move[], proposedMove: {x: number, y: number}): Move | undefined => {
+        return boardMoves.find((move) => {
+            proposedMove.x === move.x && proposedMove.y === move.y && move.userId
+        })
     }
 }
 
@@ -101,9 +106,9 @@ export const getState = (): ServerState => state
 
 export const otherPlayer = (whoAmI: WhoseTurn) => {
     if (whoAmI === WhoseTurn.X) {
-        whoAmI = WhoseTurn.O
+        return WhoseTurn.O
     } else if (whoAmI === WhoseTurn.O) {
-        whoAmI = WhoseTurn.X
+        return WhoseTurn.X
     }
 }
 
@@ -133,15 +138,12 @@ export const updateState = (stateUpdate: StateUpdate) => {
         case Action.switchWhoseTurn:
             state.games = [...state.games]
             game = utils.findGame(state, stateUpdate.payload.gameId)
-            otherPlayer(stateUpdate.payload.whoseTurn)
-
-            // game.whoseTurn = 
+            game.whoseTurn = otherPlayer(stateUpdate.payload.whoseTurn)
             break
         case Action.updateWinner:
             state.games = [...state.games]
             game = utils.findGame(state, stateUpdate.payload.gameId)
             game.winner = stateUpdate.payload.winner
-            // game.whoseTurn = 
             break
 
     }

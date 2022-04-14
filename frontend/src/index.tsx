@@ -1,8 +1,9 @@
 import ReactDOM from 'react-dom';
-import { Board, Board as BoardComponent, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
+import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
 import { checkForWin, isItMyTurn, join, makeAMove } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
+import { checkIn } from './checkIn'
 
 
 // 2/27 notes
@@ -10,38 +11,62 @@ import axios from 'axios'
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
 // Make sure what comes back from the server matches that of the state.
 
-
+//export let timerId  // need to come back and Type
 const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
 
+    if (!state.isItMyTurn) {
+        console.log('wasn\'t players turn')
+        return
+    }
+    let conflictingMove = state.board.some((boardMove: Move) => {
+        if (move.x === boardMove.x && move.y === boardMove.y) {
+            return true  // .some is a testing method to determin if any items in an array meet the criteria of the CB function
+        }
+    })
+    if (conflictingMove) {
+        console.log('move already occupied')
+        return
+    }
     const gameId = state.gameId
     const userId = state.userId
-    if (state.isItMyTurn) {
-        const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
-        const state = formState(response.data)
-        setState(state)
-        // boardSquareImage(state)
-    }
+
+    const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
+
+    setState(formState(response.data))
+    // boardSquareImage(state)
+    //timerId = setInterval(checkIn(state),3000)
+
+
 
 
 }
-// const boardSquareImage = (state: State) => {
-//     let backgroundImage
-//     if (state.)
-//     }
+
 
 const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
+    const boardSquareImage = (): string => {
+        let backgroundImage
+        if (move.type === null) {
+            backgroundImage = ''
+        } else if (move.type === "X") {
+            backgroundImage = 'http://clipart-library.com/new_gallery/203-2034970_x-marks-the-spot-clip-art.png'
+        } else {
+            backgroundImage = 'https://mpng.subpng.com/20180618/wv/kisspng-letter-case-o-english-alphabet-letter-background-5b27f98b6060c5.2419665115293464433948.jpg'
+        }
+        return backgroundImage
+    }
+
     const styles = {
         width: config.boardSquareWidth + 'px',
         height: config.boardSquareHeight + 'px',
         border: '1px solid rgba(0, 0, 0, 0.05)',
         borderColor: 'black',
-        // backgroundImage: config.boardSquareImage.
-
+        //backgroundImage: boardSquareImage()
     }
     const cb = () => {
         clickedBoardSquare(move, setState, state)
     }
     return <div onClick={cb} style={styles} className="boardSquare">
+        {/* <img src={styles.backgroundImage} ></img> */}
         {move.type}
     </div>
 }
@@ -175,7 +200,7 @@ export const buildBoard = (moves: Move[]): Board => {
     return board
 }
 
-const formState = (response: ServerResponse): State => {
+export const formState = (response: ServerResponse): State => {
     return {
         gameId: response.gameId,
         userId: response.userId,  //this can be viewed by the user...  Possible security threat?
@@ -188,7 +213,7 @@ const formState = (response: ServerResponse): State => {
 
 }
 
-const View = () => {
+export const View = () => {
     const [state, setState] = useState<State | null>(null)
     let body
 

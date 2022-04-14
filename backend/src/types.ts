@@ -36,8 +36,7 @@ export type ServerState = {
 export type BrowserMove = {
     x: number
     y: number
-    userId: UserId
-    // type: GamePiece
+    type: GamePiece
 }
 
 export type ServerResponse = {
@@ -55,6 +54,7 @@ export enum Action {
     addGame = 'addGame',
     makeAMove = 'makeAMove',
     switchWhoseTurn = 'switchWhoseTurn',
+    updateWinner = 'updateWinner',
 }
 
 export type UpdateStateJoin = {
@@ -88,8 +88,15 @@ export type UpdateSwitchWhoseTurn = {
 
 }
 
+export type UpdateStateWinner = {
+    action: Action.updateWinner,
+    payload: {
+        gameId: GameId,
+        winner: UserId
+    }
+}
 
 
-export type StateUpdate = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove | UpdateSwitchWhoseTurn
+export type StateUpdate = UpdateStateJoin | UpdateStateAddGame | UpdateStateMakeAMove | UpdateSwitchWhoseTurn | UpdateStateWinner
 
 

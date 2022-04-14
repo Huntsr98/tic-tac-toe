@@ -69,18 +69,9 @@ describe('index.ts', () => {
                     winner: null
                 }
                
-                // const utilsFindGameSpy = jest.spyOn(utils, 'findGame')
+                const utilsFindGameSpy = jest.spyOn(utils, 'findGame')
                 const utilsCheckForConflictingMove = jest.spyOn(utils, 'checkForConflictingMove')
 
-
-                const mockServerResponse: ServerResponse = {
-                    userId: '12345' as UserId,
-                    gamePiece: GamePiece.X,
-                    whoseTurn: WhoseTurn.X,
-                    gameId: '56789' as GameId,
-                    board: browserBoard,
-                    winner: null
-                }
                 
                 const mockConflictingMove: Move = {
                     x: 1,
@@ -88,7 +79,7 @@ describe('index.ts', () => {
                     userId: '23456' as UserId
                 }
 
-                // utilsFindGameSpy.mockImplementation(() => game)
+                utilsFindGameSpy.mockImplementation(() => game)
                 utilsCheckForConflictingMove.mockImplementation(() => mockConflictingMove)
                 makeAMove(requestMock, responseMock)
 

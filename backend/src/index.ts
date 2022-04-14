@@ -1,10 +1,10 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
-import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse } from './types';
+import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
-import { read } from 'fs';
+
 
 // import state, updateState, Action from new file called update-state?
 
@@ -102,6 +102,8 @@ const isItMyTurn = (userId: UserId, players: UserPlayerIds, whoseTurn: WhoseTurn
     return (userPiece === whoseTurn)
 }
 
+
+
 export const makeAMove = (
     req: {
         body: {
@@ -139,18 +141,33 @@ export const makeAMove = (
         const winner = checkForWin(req.body.userId, gameOnly.board)
         // check for winner. 
 
-        let newServerState: ServerState 
+        const checkForConflictingMove = (moves: Move[]): Move | undefined => {
+            return moves.find((move) => {
+                req.body.move.x === move.x && req.body.move.y === move.y && move.userId
+            })
+        }
 
-        if (winner) {            
+        let newServerState: ServerState
+
+        // check if the move has already been made
+        // callback function -- if playermove coordinates are the same as boardmove coordinates, 
+        // and there is a userId for the move already, then 
+        // const checkForConflictingMove = (boardMove: Move, playerMove: { x: number, y: number }) => {
+
+        const conflictingMove = checkForConflictingMove(gameOnly.board)
+        if (conflictingMove) {
+            console.log('conflicting move!')
+        } else if (winner) {
             newServerState = updateState({
-                action: Action.updateWinner, 
+                action: Action.updateWinner,
                 payload: {
                     gameId: req.body.gameId,
                     winner: req.body.userId
                 }
             })
-   
+
         } else {
+            // figure out why frontend is not switching turns
             newServerState = updateState({
                 action: Action.switchWhoseTurn,
                 payload: {
@@ -170,6 +187,9 @@ export const makeAMove = (
 
 
     console.log({ gameOnly })
+
+
+
 
     const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)

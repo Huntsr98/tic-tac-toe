@@ -23,7 +23,7 @@ export const utils = {
         // players in ServerResponse
         // AKA we're taking players out of state
 
-        const findGamePiece = (): GamePiece => {
+       const findGamePiece = (): GamePiece => {
             let gamePiece
             if (userId === players.X) {
                 gamePiece = GamePiece.X
@@ -79,6 +79,8 @@ export let state: ServerState = {
 export const findWaitingGame = (games: Games): Game | undefined => {
     return games.find((game) => !game.players.O || !game.players.X)
 }
+
+
 
 
 

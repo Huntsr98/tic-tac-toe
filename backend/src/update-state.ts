@@ -114,16 +114,17 @@ export const otherPlayer = (whoAmI: WhoseTurn) => {
 
 
 export const updateState = (stateUpdate: StateUpdate) => {
-
+    let game
     switch (stateUpdate.action) {
+        // initialize the let games?
+
         case Action.join:
             //clone state.games before you mutate
             state.games = [...state.games]
             // find game with GameId
-            let game = utils.findGame(state, stateUpdate.payload.gameId)
+            game = utils.findGame(state, stateUpdate.payload.gameId)
             // populate player[gamePiece] of game with UserId
             game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
-
             break
         case Action.addGame:
             //clone state.games before you mutate

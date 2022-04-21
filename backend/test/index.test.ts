@@ -82,7 +82,6 @@ describe('index.ts', () => {
                 utilsFindGameSpy.mockImplementation(() => game)
                 utilsCheckForConflictingMove.mockImplementation(() => mockConflictingMove)
                 makeAMove(requestMock, responseMock)
-
                 const result = utils.checkForConflictingMove(game.board, requestMock.body.move)
                 expect(result).toEqual(mockConflictingMove)
 

@@ -29,7 +29,7 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
     }
     const gameId = state.gameId
     const userId = state.userId
-
+    debugger
     const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
 
     setState(formState(response.data))

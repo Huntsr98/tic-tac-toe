@@ -25,19 +25,12 @@ export const utils = {
 
         const findGamePiece = (): GamePiece => {
             let gamePiece
-            if (userId === players.X && whoseTurn === 'X') {
+            if (userId === players.X) {
                 gamePiece = GamePiece.X
-            } else if (userId === players.O && whoseTurn === 'O') {
+            } else if (userId === players.O) {
                 gamePiece = GamePiece.O
             }
-            else {
-                if (players.X === userId) {
-                    gamePiece = GamePiece.O
-                }
-                else if (players.O === userId) {
-                    gamePiece = GamePiece.X
-                }
-            }
+
             return gamePiece
         }
 
@@ -55,14 +48,14 @@ export const utils = {
                 browserMove.type = GamePiece.X
             } else {
                 browserMove.type = GamePiece.O
-            } 
+            }
             return browserMove
 
         })
         const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
         return serverResponse
     },
-    checkForConflictingMove:(boardMoves: Move[], proposedMove: {x: number, y: number}): Move | undefined => {
+    checkForConflictingMove: (boardMoves: Move[], proposedMove: { x: number, y: number }): Move | undefined => {
         return boardMoves.find((move) => {
             proposedMove.x === move.x && proposedMove.y === move.y && move.userId
         })

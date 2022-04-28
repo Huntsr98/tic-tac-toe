@@ -1,5 +1,7 @@
 import axios from 'axios'
-import { config, State, Env, GamePiece, Color, ServerResponse } from './state'
+import { config, State, Env, GamePiece, Color, ServerResponse, UserId, GameId, Move } from './state'
+import { formState } from './index'
+
 
 export const checkForWin = (gamePiece: GamePiece, winner: MaybeGamePiece): boolean => {
     return gamePiece === winner
@@ -34,9 +36,9 @@ export const join = async (): Promise<ServerResponse> => {
 }
 
 
-export const makeAMove = async (): Promise<ServerResponse> => {
-    const userId = localStorage.getItem('userId')
-    const response = await axios.post(getUrlJoin(), { userId })
+export const makeAMove = async (userId: UserId, gameId: GameId, move: Move): Promise<ServerResponse> => {
+
+    const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
     return response.data
 }
 /**

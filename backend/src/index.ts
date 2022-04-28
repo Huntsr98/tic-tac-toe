@@ -38,6 +38,22 @@ app.use(cors(corsOptions))
 //START ENDPOINTS HERE
 
 
+app.post('/get-state', (req, res) => {
+    // const serverState: ServerState = updateState({
+    //     action: Action.getState,
+    //     payload: {
+    //         userId,
+    //         gameId,
+    //         gamePiece
+    //     }
+    // })
+
+    const gameOnly: Game = utils.findGame(getState(), req.body.gameId)
+    const serverResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
+
+    res.send(serverResponse)
+})
+
 app.post('/join', (req, res) => {
     console.log(req.body)
     const userId = req.body.userId || uuidv4()
@@ -178,23 +194,23 @@ export const makeAMove = (
                     gameId: req.body.gameId,
                     whoseTurn: gameOnly.whoseTurn
                 }
-            }) 
+            })
 
         }
 
-// HW: 
-// check adding second player to existing game
-// why is it allowing two moves in the same square? 
-// only updates when you click....
+        // HW: 
+        // check adding second player to existing game
+        // why is it allowing two moves in the same square? 
+        // only updates when you click....
 
 
-// how do you get it to update by itself???
-// clearinterval w/ (state, setstate in frontend?)
-// if (isItMyTurn(currentState) === true) {
-//     clearInterval(timerId)
+        // how do you get it to update by itself???
+        // clearinterval w/ (state, setstate in frontend?)
+        // if (isItMyTurn(currentState) === true) {
+        //     clearInterval(timerId)
 
-//     setState(currentState)
-// }
+        //     setState(currentState)
+        // }
 
         // if there is no winner, switch turns.
         gameOnly = utils.findGame(newServerState, req.body.gameId)

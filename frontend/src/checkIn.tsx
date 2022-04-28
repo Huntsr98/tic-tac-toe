@@ -1,6 +1,6 @@
 import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
 import axios from 'axios'
-import {formState, timerId, setState} from './index'
+import {formState, timerId} from './index'
 
 
 // if (isItMyTurn(currentState) === true) {
@@ -14,7 +14,7 @@ import {formState, timerId, setState} from './index'
 
 
 //make get-State endpoint
-export const checkIn = async (state: State) => {
+export const checkIn = async (state: State, setState: (state: State) => void) => {
         
         const body = {
             userId: state.userId,
@@ -26,7 +26,7 @@ export const checkIn = async (state: State) => {
         const response = await askForState
         // const convertToState = formState(response)
 
-        const currentState: State = response.data.state
+        const currentState: State = formState(response.data)
         if (currentState.isItMyTurn === true) {
             clearInterval(timerId)
           

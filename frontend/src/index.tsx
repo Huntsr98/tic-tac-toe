@@ -12,7 +12,7 @@ import { checkIn } from './checkIn'
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
 // Make sure what comes back from the server matches that of the state.
 
-export let timerId  // need to come back and Type
+export let timerId: number  // need to come back and Type
 const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
 
     if (!state.isItMyTurn) {
@@ -28,6 +28,10 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
         console.log('move already occupied')
         return
     }
+    // if (state.winner) {
+    //     console.log('winner!')
+    //     return
+    // }
     const gameId = state.gameId
     const userId = state.userId
     debugger
@@ -35,7 +39,7 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
 
     setState(formState(responseData))
     // boardSquareImage(state)
-    timerId = setInterval(() => { checkIn(state) }, 3000)
+    timerId = setInterval(() => { checkIn(state, setState) }, 3000)
 
 }
 

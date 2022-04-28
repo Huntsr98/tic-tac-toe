@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
-import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move } from './types';
+import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
 
@@ -37,6 +37,10 @@ app.use(cors(corsOptions))
 
 //START ENDPOINTS HERE
 
+// HW: Join is not letting you update from same game when you refresh??
+// userId to find gameId??
+// HW2: alert winner when they win, and also the other player
+// also, make sure that winner cannot keep making moves after they win
 
 app.post('/get-state', (req, res) => {
     // const serverState: ServerState = updateState({
@@ -58,22 +62,37 @@ app.post('/join', (req, res) => {
     console.log(req.body)
     const userId = req.body.userId || uuidv4()
     const state = getState()
-    let game = findWaitingGame(state.games)
+    // somewhere here???
+
+    const findPreExistingGame = (userId: UserId, games: Games): Game | undefined => {
+        return games.find((game) => userId === game.players.X || userId === game.players.O)
+    }
+
+    let game = findPreExistingGame(userId, state.games)
     let gameId: GameId
     let gamePiece: GamePiece
-    if (game === undefined) {
-        game = gameFactory()
-        // clone state.games so you don't mutate state
+
+    if (game) {
         gameId = game.gameId
-        updateState({ action: Action.addGame, payload: game })
-        gamePiece = GamePiece.X
-        // updateState({action: Action.switchWhoseTurn, payload: {gameId: gameId, whoseTurn: gamePiece as unknown as WhoseTurn}})
-        // if there is no existing Game, then make a new game
-        // assign userId to player X inside of the new game
-    } else {
-        gameId = game.gameId
-        gamePiece = GamePiece.O
-        // if there is an existing game, then assign userId to player O
+        gamePiece = utils.findGamePiece(userId, game.players)
+
+    } else if (!game) {
+        game = findWaitingGame(state.games)
+
+        if (game === undefined) {
+            game = gameFactory()
+            // clone state.games so you don't mutate state
+            gameId = game.gameId
+            updateState({ action: Action.addGame, payload: game })
+            gamePiece = GamePiece.X
+            // updateState({action: Action.switchWhoseTurn, payload: {gameId: gameId, whoseTurn: gamePiece as unknown as WhoseTurn}})
+            // if there is no existing Game, then make a new game
+            // assign userId to player X inside of the new game
+        } else {
+            gameId = game.gameId
+            gamePiece = GamePiece.O
+            // if there is an existing game, then assign userId to player O
+        }
     }
 
     const serverState: ServerState = updateState({
@@ -139,10 +158,12 @@ export const makeAMove = (
 ) => {
     // find gameOnly
     let gameOnly = utils.findGame(getState(), req.body.gameId)
-    // this is undefined???
 
 
-    // is this in the wrong order?????
+    // HW: check for winner here, block if there is one. 
+
+
+
     if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
         const serverState: ServerState = updateState({
             action: Action.makeAMove,
@@ -158,26 +179,13 @@ export const makeAMove = (
         gameOnly = utils.findGame(serverState, req.body.gameId)
 
         const winner = checkForWin(req.body.userId, gameOnly.board)
-        // check for winner. 
-
-        // const checkForConflictingMove = (moves: Move[]): Move | undefined => {
-        //     return moves.find((move) => {
-        //         req.body.move.x === move.x && req.body.move.y === move.y && move.userId
-        //     })
-        // }
-
         let newServerState: ServerState
-
-        // check if the move has already been made
-        // callback function -- if playermove coordinates are the same as boardmove coordinates, 
-        // and there is a userId for the move already, then 
-        // const checkForConflictingMove = (boardMove: Move, playerMove: { x: number, y: number }) => {
-
         const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
-        // fix conflictingMove
+        
         if (conflictingMove) {
             console.log('conflicting move!')
         } else if (winner) {
+            console.log('game over!')
             newServerState = updateState({
                 action: Action.updateWinner,
                 payload: {
@@ -185,9 +193,7 @@ export const makeAMove = (
                     winner: req.body.userId
                 }
             })
-
         } else {
-            // figure out why frontend is not switching turns
             newServerState = updateState({
                 action: Action.switchWhoseTurn,
                 payload: {
@@ -219,11 +225,7 @@ export const makeAMove = (
         gameOnly = utils.findGame(getState(), req.body.gameId)
     } // do I still need this else? 
 
-
     console.log({ gameOnly })
-
-
-
 
     const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)

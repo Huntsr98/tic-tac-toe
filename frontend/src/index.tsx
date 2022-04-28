@@ -27,6 +27,10 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
         console.log('move already occupied')
         return
     }
+    // if (state.winner) {
+    //     console.log('winner!')
+    //     return
+    // }
     const gameId = state.gameId
     const userId = state.userId
     debugger

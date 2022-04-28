@@ -1,4 +1,4 @@
-import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove } from "./types"
+import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove, UserPlayerIds } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 import { extractPlayersMoves } from "./check-for-win";
 
@@ -23,20 +23,7 @@ export const utils = {
         // players in ServerResponse
         // AKA we're taking players out of state
 
-       const findGamePiece = (): GamePiece => {
-            let gamePiece
-            if (userId === players.X) {
-                gamePiece = GamePiece.X
-            } else if (userId === players.O) {
-                gamePiece = GamePiece.O
-            }
-
-            return gamePiece
-        }
-
-        const gamePiece: GamePiece = findGamePiece()
-
-
+        const gamePiece: GamePiece = utils.findGamePiece(userId, players)
 
         const browserBoard = board.map((move: Move): BrowserMove => {
             const browserMove: BrowserMove = {
@@ -59,6 +46,15 @@ export const utils = {
         return boardMoves.find((move) => {
             proposedMove.x === move.x && proposedMove.y === move.y && move.userId
         })
+    },
+    findGamePiece: (userId: UserId, players: UserPlayerIds): GamePiece => {
+        let gamePiece
+        if (userId === players.X) {
+            gamePiece = GamePiece.X
+        } else if (userId === players.O) {
+            gamePiece = GamePiece.O
+        }
+        return gamePiece
     }
 }
 

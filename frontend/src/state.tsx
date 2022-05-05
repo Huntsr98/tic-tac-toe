@@ -35,7 +35,9 @@ export type Config = {
     boardWidth: number
     boarderColor: {
         myTurn: Color.green,
-        notMyTurn: Color.red
+        notMyTurn: Color.red,
+        winFlashOne: Color.gold,
+        winFlashTwo: Color.grey
     }
     locationX:number 
     locationY: number
@@ -60,7 +62,9 @@ export const config: Config = {
     boardWidth: boardDimension,
     boarderColor: {
         myTurn: Color.green,
-        notMyTurn: Color.red
+        notMyTurn: Color.red,
+        winFlashOne: Color.gold,
+        winFlashTwo: Color.grey
     },
     locationX: 100, 
     locationY: 100,

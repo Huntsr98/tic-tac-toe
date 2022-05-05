@@ -1,6 +1,7 @@
 import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
 import axios from 'axios'
-import {formState, timerId} from './index'
+import { formState, timerId } from './index'
+import { changeBoarderColor } from './board-CSS'
 
 
 // if (isItMyTurn(currentState) === true) {
@@ -15,27 +16,34 @@ import {formState, timerId} from './index'
 
 //make get-State endpoint
 export const checkIn = async (state: State, setState: (state: State) => void) => {
-        
-        const body = {
-            userId: state.userId,
-            gameId: state.gameId }
 
-             //will we need to create "is-it-my-turn" endpoint on the backend?
-        const askForState = axios.post('http://localhost:3000/get-state', body)
-       
-        const response = await askForState
-        // const convertToState = formState(response)
-
-        const currentState: State = formState(response.data)
-        if (currentState.isItMyTurn === true) {
-            clearInterval(timerId)
-          
-            setState(currentState)
-        }
+    const body = {
+        userId: state.userId,
+        gameId: state.gameId
     }
 
+    //will we need to create "is-it-my-turn" endpoint on the backend?
+    const askForState = axios.post('http://localhost:3000/get-state', body)
 
-    
+    const response = await askForState
+    // const convertToState = formState(response)
+
+    const currentState: State = formState(response.data)
+    if (currentState.winner === null) {
+        if (currentState.isItMyTurn === true) {
+            clearInterval(timerId)
+            // changeBoarderColor(currentState)
+            setState(currentState)
+        }
+    } else {
+        const winnerAlert = currentState.winner + ' is the winner!!'
+
+        alert(winnerAlert)
+    }
+}
+
+
+
 // const startGame = async () => {
 //         const userId = localStorage.getItem(‘userId’)
 //         // call to API

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { config, State, Env, GamePiece, Color, ServerResponse, UserId, GameId, Move } from './state'
+import { config, State, Env, GamePiece, Color, ServerResponse, UserId, GameId, Move, MaybeGamePiece } from './state'
 import { formState } from './index'
 
 

@@ -4,9 +4,9 @@ import { checkForWin, isItMyTurn, join, makeAMove } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
 import { checkIn } from './checkIn'
+import {changeBoarderColor} from './board-CSS'
 
-
-
+// 4/27 - what to do if theres a winner!
 // 2/27 notes
 // propDrill state from view down to clickBoardSquare
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
@@ -34,7 +34,7 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
     // }
     const gameId = state.gameId
     const userId = state.userId
-    debugger
+    
     const responseData = await makeAMove(userId, gameId, move)//await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
 
     setState(formState(responseData))
@@ -44,24 +44,14 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
 }
 
 
-const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
-    const boardSquareImage = (): string => {
-        let backgroundImage
-        if (move.type === null) {
-            backgroundImage = ''
-        } else if (move.type === "X") {
-            backgroundImage = 'http://clipart-library.com/new_gallery/203-2034970_x-marks-the-spot-clip-art.png'
-        } else {
-            backgroundImage = 'https://mpng.subpng.com/20180618/wv/kisspng-letter-case-o-english-alphabet-letter-background-5b27f98b6060c5.2419665115293464433948.jpg'
-        }
-        return backgroundImage
-    }
 
+const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
+   
     const styles = {
         width: config.boardSquareWidth + 'px',
         height: config.boardSquareHeight + 'px',
         border: '1px solid rgba(0, 0, 0, 0.05)',
-        borderColor: 'black',
+        borderColor: changeBoarderColor(state),
         //backgroundImage: boardSquareImage()
     }
     const cb = () => {

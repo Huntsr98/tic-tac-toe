@@ -137,6 +137,10 @@ export const updateState = (stateUpdate: StateUpdate) => {
             game = utils.findGame(state, stateUpdate.payload.gameId)
             game.winner = stateUpdate.payload.winner
             break
+        // case Action.getState:
+        //     state.games = [...state.games]
+        //     game = utils.findGame(state, stateUpdate.payload.gameId)
+        //     break 
 
     }
     return state

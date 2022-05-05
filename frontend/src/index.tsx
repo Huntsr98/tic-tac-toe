@@ -6,12 +6,13 @@ import axios from 'axios'
 import { checkIn } from './checkIn'
 
 
+
 // 2/27 notes
 // propDrill state from view down to clickBoardSquare
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
 // Make sure what comes back from the server matches that of the state.
 
-//export let timerId  // need to come back and Type
+export let timerId: number  // need to come back and Type
 const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
 
     if (!state.isItMyTurn) {
@@ -34,14 +35,11 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
     const gameId = state.gameId
     const userId = state.userId
     debugger
-    const response = await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
+    const responseData = await makeAMove(userId, gameId, move)//await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
 
-    setState(formState(response.data))
+    setState(formState(responseData))
     // boardSquareImage(state)
-    //timerId = setInterval(checkIn(state),3000)
-
-
-
+    timerId = setInterval(() => { checkIn(state, setState) }, 3000)
 
 }
 

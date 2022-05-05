@@ -42,6 +42,22 @@ app.use(cors(corsOptions))
 // HW2: alert winner when they win, and also the other player
 // also, make sure that winner cannot keep making moves after they win
 
+app.post('/get-state', (req, res) => {
+    // const serverState: ServerState = updateState({
+    //     action: Action.getState,
+    //     payload: {
+    //         userId,
+    //         gameId,
+    //         gamePiece
+    //     }
+    // })
+
+    const gameOnly: Game = utils.findGame(getState(), req.body.gameId)
+    const serverResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
+
+    res.send(serverResponse)
+})
+
 app.post('/join', (req, res) => {
     console.log(req.body)
     const userId = req.body.userId || uuidv4()

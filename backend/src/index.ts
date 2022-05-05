@@ -143,57 +143,58 @@ export const makeAMove = (
     // find gameOnly
     let gameOnly = utils.findGame(getState(), req.body.gameId)
 
-
     // HW: check for winner here, block if there is one. 
-
-
-
-    if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
-        const serverState: ServerState = updateState({
-            action: Action.makeAMove,
-            payload: {
-                gameId: req.body.gameId,
-                move: {
-                    x: req.body.move.x,
-                    y: req.body.move.y,
-                    userId: req.body.userId
-                },
-            }
-        })
-        gameOnly = utils.findGame(serverState, req.body.gameId)
-
-        const winner = checkForWin(req.body.userId, gameOnly.board)
-        let newServerState: ServerState
-        const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
-        
-        if (conflictingMove) {
-            console.log('conflicting move!')
-        } else if (winner) {
-            console.log('game over!')
-            newServerState = updateState({
-                action: Action.updateWinner,
-                payload: {
-                    gameId: req.body.gameId,
-                    winner: req.body.userId
-                }
-            })
-        } else {
-            newServerState = updateState({
-                action: Action.switchWhoseTurn,
-                payload: {
-                    gameId: req.body.gameId,
-                    whoseTurn: gameOnly.whoseTurn
-                }
-            })
-
-        }
-        gameOnly = utils.findGame(newServerState, req.body.gameId)
-
+    let winner = checkForWin(req.body.userId, gameOnly.board)
+    if (winner) {
+        console.log('game over!')
     } else {
-        gameOnly = utils.findGame(getState(), req.body.gameId)
-    } // do I still need this else? 
+        if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
+            const serverState: ServerState = updateState({
+                action: Action.makeAMove,
+                payload: {
+                    gameId: req.body.gameId,
+                    move: {
+                        x: req.body.move.x,
+                        y: req.body.move.y,
+                        userId: req.body.userId
+                    },
+                }
+            })
+            gameOnly = utils.findGame(serverState, req.body.gameId)
 
-    console.log({ gameOnly })
+            winner = checkForWin(req.body.userId, gameOnly.board)
+            let newServerState: ServerState
+            const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
+
+            if (conflictingMove) {
+                console.log('conflicting move!')
+            } else if (winner) {
+                console.log('game over!')
+                newServerState = updateState({
+                    action: Action.updateWinner,
+                    payload: {
+                        gameId: req.body.gameId,
+                        winner: req.body.userId
+                    }
+                })
+            } else {
+                newServerState = updateState({
+                    action: Action.switchWhoseTurn,
+                    payload: {
+                        gameId: req.body.gameId,
+                        whoseTurn: gameOnly.whoseTurn
+                    }
+                })
+
+            }
+            gameOnly = utils.findGame(newServerState, req.body.gameId)
+
+        } else {
+            gameOnly = utils.findGame(getState(), req.body.gameId)
+        } // do I still need this else? 
+    }
+
+    // console.log({ gameOnly })
 
     const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)

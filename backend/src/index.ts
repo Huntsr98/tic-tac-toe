@@ -138,7 +138,7 @@ const isItMyTurn = (userId: UserId, players: UserPlayerIds, whoseTurn: WhoseTurn
     return (userPiece === whoseTurn)
 }
 
-
+let newServerState: ServerState
 
 export const makeAMove = (
     req: {
@@ -157,7 +157,8 @@ export const makeAMove = (
     }
 ) => {
     // find gameOnly
-    let gameOnly = utils.findGame(getState(), req.body.gameId)
+    const state = getState()
+    let gameOnly = utils.findGame(state, req.body.gameId)
 
 
     // HW: check for winner here, block if there is one. 
@@ -179,9 +180,9 @@ export const makeAMove = (
         gameOnly = utils.findGame(serverState, req.body.gameId)
 
         const winner = checkForWin(req.body.userId, gameOnly.board)
-        let newServerState: ServerState
+        // let newServerState: ServerState - coppied to line 141 for global access
         const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
-        
+
         if (conflictingMove) {
             console.log('conflicting move!')
         } else if (winner) {
@@ -244,3 +245,55 @@ app.post('/make-a-move', makeAMove)
 app.listen(port, () => {
     // logger(`Example app listening on port ${port}!`)
 });
+
+//--------------------------------------------- 
+type RequestStructure = {
+    body: {
+        userId: UserId
+        gameId: GameId
+    }
+}
+
+export const forfeit = (
+    req: RequestStructure,
+    res: {
+        send: (serverResponse: ServerResponse) => unknown
+    }
+) => {
+    // NOTE:  add logic under each step
+    // get the loser:  userId that was sent to the server
+    const loser = req.body.userId
+    // find the game youre in within state
+    const state = getState()
+    const gameOnly = utils.findGame(state, req.body.gameId)
+    // find the players within game
+    const players = gameOnly.players
+    // find the userId that was not sent to the server
+    let winner
+    if (players.X === loser) {
+        winner = players.O
+    } else {
+        winner = players.X
+    }
+    // update state with "winner"
+    console.log('game over!')
+    newServerState = updateState({
+        action: Action.updateWinner,
+        payload: {
+            gameId: req.body.gameId,
+            winner
+        }
+    })
+    // convert state to response
+    const updatedGameOnly = utils.findGame(newServerState, req.body.gameId)
+    const serverResponse: ServerResponse = utils.convertStateToResponse(updatedGameOnly, req.body.userId)
+    // send back state
+    res.send(serverResponse)
+
+    // let gameOnly = utils.findGame(getState(), req.body.gameId)
+
+    // send serverResponse
+}
+
+
+app.post('/forfeit', forfeit)

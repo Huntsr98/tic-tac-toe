@@ -138,7 +138,7 @@ const isItMyTurn = (userId: UserId, players: UserPlayerIds, whoseTurn: WhoseTurn
     return (userPiece === whoseTurn)
 }
 
-let newServerState: ServerState
+
 
 export const makeAMove = (
     req: {
@@ -180,7 +180,7 @@ export const makeAMove = (
         gameOnly = utils.findGame(serverState, req.body.gameId)
 
         const winner = checkForWin(req.body.userId, gameOnly.board)
-        // let newServerState: ServerState - coppied to line 141 for global access
+        let newServerState: ServerState 
         const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
 
         if (conflictingMove) {
@@ -277,7 +277,7 @@ export const forfeit = (
     }
     // update state with "winner"
     console.log('game over!')
-    newServerState = updateState({
+    const newServerState = updateState({
         action: Action.updateWinner,
         payload: {
             gameId: req.body.gameId,

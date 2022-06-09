@@ -157,29 +157,70 @@ export const makeAMove = (
     }
 ) => {
     // find gameOnly
-    let gameOnly = utils.findGame(getState(), req.body.gameId)
+    const state = getState()
+    let gameOnly = utils.findGame(state, req.body.gameId)
 
-    // HW: check for winner here, block if there is one. 
-    let winner = checkForWin(req.body.userId, gameOnly.board)
-    if (winner) {
-        console.log('game over!')
-    } else {
-        if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
-            const serverState: ServerState = updateState({
-                action: Action.makeAMove,
+    // HW: check for winner here. If there is a winner, convert state to response and send. 
+    let winner 
+    winner = checkForWin(req.body.userId, gameOnly.board)
+    let myturn
+    myturn = isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)
+
+
+// if there is a winner or it is not my turn, do nothing
+    if (winner || !myturn) {
+        const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
+        res.send(serverResponse)
+    } else if (!winner && myturn) {
+    // otherwise, (assuming there is no winner and it is my turn)
+
+
+
+    }
+
+
+    if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
+        const serverState: ServerState = updateState({
+            action: Action.makeAMove,
+            payload: {
+                gameId: req.body.gameId,
+                move: {
+                    x: req.body.move.x,
+                    y: req.body.move.y,
+                    userId: req.body.userId
+                },
+            }
+        })
+        gameOnly = utils.findGame(serverState, req.body.gameId)
+
+        let winner = checkForWin(req.body.userId, gameOnly.board)
+        let newServerState: ServerState 
+        const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
+
+        if (conflictingMove) {
+            console.log('conflicting move!')
+        } else if (winner) {
+            console.log('game over!')
+            newServerState = updateState({
+                action: Action.updateWinner,
                 payload: {
                     gameId: req.body.gameId,
-                    move: {
-                        x: req.body.move.x,
-                        y: req.body.move.y,
-                        userId: req.body.userId
-                    },
+                    winner: req.body.userId
+                }
+            })
+        } else {
+            newServerState = updateState({
+                action: Action.switchWhoseTurn,
+                payload: {
+                    gameId: req.body.gameId,
+                    // EMILY: find whoseTurn!!! put it here. 
+                    whoseTurn: 
                 }
             })
             gameOnly = utils.findGame(serverState, req.body.gameId)
 
             winner = checkForWin(req.body.userId, gameOnly.board)
-            let newServerState: ServerState
+          
             const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
 
             if (conflictingMove) {
@@ -229,3 +270,55 @@ app.post('/make-a-move', makeAMove)
 app.listen(port, () => {
     // logger(`Example app listening on port ${port}!`)
 });
+
+//--------------------------------------------- 
+type RequestStructure = {
+    body: {
+        userId: UserId
+        gameId: GameId
+    }
+}
+
+export const forfeit = (
+    req: RequestStructure,
+    res: {
+        send: (serverResponse: ServerResponse) => unknown
+    }
+) => {
+    // NOTE:  add logic under each step
+    // get the loser:  userId that was sent to the server
+    const loser = req.body.userId
+    // find the game youre in within state
+    const state = getState()
+    const gameOnly = utils.findGame(state, req.body.gameId)
+    // find the players within game
+    const players = gameOnly.players
+    // find the userId that was not sent to the server
+    let winner
+    if (players.X === loser) {
+        winner = players.O
+    } else {
+        winner = players.X
+    }
+    // update state with "winner"
+    console.log('game over!')
+    const newServerState = updateState({
+        action: Action.updateWinner,
+        payload: {
+            gameId: req.body.gameId,
+            winner
+        }
+    })
+    // convert state to response
+    const updatedGameOnly = utils.findGame(newServerState, req.body.gameId)
+    const serverResponse: ServerResponse = utils.convertStateToResponse(updatedGameOnly, req.body.userId)
+    // send back state
+    res.send(serverResponse)
+
+    // let gameOnly = utils.findGame(getState(), req.body.gameId)
+
+    // send serverResponse
+}
+
+
+app.post('/forfeit', forfeit)

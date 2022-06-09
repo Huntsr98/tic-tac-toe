@@ -35,6 +35,18 @@ export const join = async (): Promise<ServerResponse> => {
     // response.data is the new games state
 }
 
+//EMILY
+
+export const forfeit = async(userId: UserId): Promise<ServerResponse> => {
+    // call to new endpoint that steve is making
+
+    // this should be going to end current game / or a forfeit endpoint? 
+    const response = await axios.post('http://localhost:3000/end-game', {userId})
+    
+    return response.data
+    // response.data is the new games state
+}
+
 
 export const makeAMove = async (userId: UserId, gameId: GameId, move: Move): Promise<ServerResponse> => {
 

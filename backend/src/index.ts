@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
-import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games } from './types';
+import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games, RequestStructure } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
 
@@ -160,26 +160,12 @@ export const makeAMove = (
     const state = getState()
     let gameOnly = utils.findGame(state, req.body.gameId)
 
-    // HW: check for winner here. If there is a winner, convert state to response and send. 
-    let winner 
+    let winner
     winner = checkForWin(req.body.userId, gameOnly.board)
     let myturn
     myturn = isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)
 
-
-// if there is a winner or it is not my turn, do nothing
-    if (winner || !myturn) {
-        const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
-        res.send(serverResponse)
-    } else if (!winner && myturn) {
-    // otherwise, (assuming there is no winner and it is my turn)
-
-
-
-    }
-
-
-    if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
+    if (!winner && myturn) {
         const serverState: ServerState = updateState({
             action: Action.makeAMove,
             payload: {
@@ -193,8 +179,9 @@ export const makeAMove = (
         })
         gameOnly = utils.findGame(serverState, req.body.gameId)
 
-        let winner = checkForWin(req.body.userId, gameOnly.board)
-        let newServerState: ServerState 
+        winner = checkForWin(req.body.userId, gameOnly.board)
+        let newServerState: ServerState
+
         const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
 
         if (conflictingMove) {
@@ -213,71 +200,25 @@ export const makeAMove = (
                 action: Action.switchWhoseTurn,
                 payload: {
                     gameId: req.body.gameId,
-                    // EMILY: find whoseTurn!!! put it here. 
-                    whoseTurn: 
+                    whoseTurn: gameOnly.whoseTurn
                 }
             })
-            gameOnly = utils.findGame(serverState, req.body.gameId)
 
-            winner = checkForWin(req.body.userId, gameOnly.board)
-          
-            const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
+        }
+        gameOnly = utils.findGame(newServerState, req.body.gameId)
 
-            if (conflictingMove) {
-                console.log('conflicting move!')
-            } else if (winner) {
-                console.log('game over!')
-                newServerState = updateState({
-                    action: Action.updateWinner,
-                    payload: {
-                        gameId: req.body.gameId,
-                        winner: req.body.userId
-                    }
-                })
-            } else {
-                newServerState = updateState({
-                    action: Action.switchWhoseTurn,
-                    payload: {
-                        gameId: req.body.gameId,
-                        whoseTurn: gameOnly.whoseTurn
-                    }
-                })
-
-            }
-            gameOnly = utils.findGame(newServerState, req.body.gameId)
-
-        } else {
-            gameOnly = utils.findGame(getState(), req.body.gameId)
-        } // do I still need this else? 
+    } else {
+        gameOnly = utils.findGame(getState(), req.body.gameId)
     }
-
-    // console.log({ gameOnly })
-
     const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
 
-    // send serverResponse
-
-
-
-
 }
+
 app.post('/make-a-move', makeAMove)
 
-//make /move endpoint
 
 
-app.listen(port, () => {
-    // logger(`Example app listening on port ${port}!`)
-});
-
-//--------------------------------------------- 
-type RequestStructure = {
-    body: {
-        userId: UserId
-        gameId: GameId
-    }
-}
 
 export const forfeit = (
     req: RequestStructure,
@@ -322,3 +263,12 @@ export const forfeit = (
 
 
 app.post('/forfeit', forfeit)
+
+
+
+
+app.listen(port, () => {
+    // logger(`Example app listening on port ${port}!`)
+});
+
+//--------------------------------------------- 

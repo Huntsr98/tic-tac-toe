@@ -4,7 +4,7 @@ import { utils, findWaitingGame, gameFactory, getState, state, updateState } fro
 import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
-
+import "./mongoDb"
 
 // import state, updateState, Action from new file called update-state?
 

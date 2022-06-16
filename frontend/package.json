@@ -1,16 +1,8 @@
 {
-  "name": "tic-tac-toe",
-  "version": "1.0.0",
-  "description": "tic-tac-toe",
-  "default": "./src/index.tsx",
-  "scripts": {
-    "test": "npm test",
-    "dev": "parcel ./index.html"
-  },
-  "author": "King of Shortcuts",
-  "license": "ISC",
   "dependencies": {
     "axios": "^0.24.0",
+    "dotenv": "^16.0.1",
+    "mongodb": "^4.7.0",
     "parcel": "^2.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"

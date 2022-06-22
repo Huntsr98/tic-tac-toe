@@ -19,6 +19,14 @@ export type UserPlayerIds = {
     O: null | UserId
 }
 
+export type RequestStructure = {
+    body: {
+        userId: UserId
+        gameId: GameId
+    }
+}
+
+
 export type UserId = 'userId'
 export type GameId = 'gameId'
 export type Game = {

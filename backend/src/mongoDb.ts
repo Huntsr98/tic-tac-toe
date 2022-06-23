@@ -1,5 +1,5 @@
 require('dotenv').config()
-console.log(process.env.MONGODB_PW) // remove this after you've confirmed it working
+console.log('process.env.password', !!process.env.MONGODB_PW) // remove this after you've confirmed it working
 
 const connectionString = `mongodb+srv://TicTacToeApp:${process.env.MONGODB_PW}@somethingfrisky.piat2w4.mongodb.net/?retryWrites=true&w=majority`
 import { MongoClient } from "mongodb";
@@ -16,7 +16,8 @@ const client = new MongoClient(connectionString);
 const dbName = 'ticTacToe';
 
 async function main() {
-  // Use connect method to connect to the server
+  console.log('before connect')
+    // Use connect method to connect to the server
   await client.connect();
   console.log('Connected successfully to server');
   const db = client.db(dbName);
@@ -27,9 +28,9 @@ async function main() {
   return 'done.';
 }
 
-const saveGame = async (game: Game) => {
+export const saveGame = async (game: Game) => {
   const db = client.db(dbName);
-  const collection = db.collection('games');
+  const collection = db.collection<Game>('games');
   const result = await collection.insertOne(game)
   return result.insertedId
 }
@@ -38,3 +39,4 @@ main()
   .then(console.log)
   .catch(console.error)
   .finally(() => client.close());
+

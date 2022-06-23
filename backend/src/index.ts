@@ -58,7 +58,7 @@ app.post('/get-state', (req, res) => {
     res.send(serverResponse)
 })
 
-app.post('/join', (req, res) => {
+app.post('/join', async (req, res) => {
     console.log(req.body)
     const userId = req.body.userId || uuidv4()
     const state = getState()
@@ -73,7 +73,7 @@ app.post('/join', (req, res) => {
     let gamePiece: GamePiece
 
     if (game) {
-        gameId = game.gameId
+        gameId = game._id
         gamePiece = utils.findGamePiece(userId, game.players)
 
     } else if (!game) {
@@ -82,20 +82,20 @@ app.post('/join', (req, res) => {
         if (game === undefined) {
             game = gameFactory()
             // clone state.games so you don't mutate state
-            gameId = game.gameId
+            gameId = game._id
             updateState({ action: Action.addGame, payload: game })
             gamePiece = GamePiece.X
             // updateState({action: Action.switchWhoseTurn, payload: {gameId: gameId, whoseTurn: gamePiece as unknown as WhoseTurn}})
             // if there is no existing Game, then make a new game
             // assign userId to player X inside of the new game
         } else {
-            gameId = game.gameId
+            gameId = game._id
             gamePiece = GamePiece.O
             // if there is an existing game, then assign userId to player O
         }
     }
 
-    const serverState: ServerState = updateState({
+    const serverState: ServerState = await updateState({
         action: Action.join,
         payload: {
             userId,
@@ -104,7 +104,7 @@ app.post('/join', (req, res) => {
         }
     })
 
-    const gameOnly: Game = utils.findGame(serverState, game.gameId)
+    const gameOnly: Game = utils.findGame(serverState, game._id)
     const serverResponse = utils.convertStateToResponse(gameOnly, userId)
 
     res.send(serverResponse)
@@ -140,7 +140,7 @@ const isItMyTurn = (userId: UserId, players: UserPlayerIds, whoseTurn: WhoseTurn
 
 
 
-export const makeAMove = (
+export const makeAMove = async (
     req: {
         body: {
             userId: UserId,
@@ -166,7 +166,7 @@ export const makeAMove = (
 
 
     if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
-        const serverState: ServerState = updateState({
+        const serverState: ServerState = await updateState({
             action: Action.makeAMove,
             payload: {
                 gameId: req.body.gameId,
@@ -187,7 +187,7 @@ export const makeAMove = (
             console.log('conflicting move!')
         } else if (winner) {
             console.log('game over!')
-            newServerState = updateState({
+            newServerState = await updateState({
                 action: Action.updateWinner,
                 payload: {
                     gameId: req.body.gameId,
@@ -195,7 +195,7 @@ export const makeAMove = (
                 }
             })
         } else {
-            newServerState = updateState({
+            newServerState = await updateState({
                 action: Action.switchWhoseTurn,
                 payload: {
                     gameId: req.body.gameId,
@@ -254,7 +254,7 @@ type RequestStructure = {
     }
 }
 
-export const forfeit = (
+export const forfeit = async (
     req: RequestStructure,
     res: {
         send: (serverResponse: ServerResponse) => unknown
@@ -277,7 +277,7 @@ export const forfeit = (
     }
     // update state with "winner"
     console.log('game over!')
-    const newServerState = updateState({
+    const newServerState = await updateState({
         action: Action.updateWinner,
         payload: {
             gameId: req.body.gameId,

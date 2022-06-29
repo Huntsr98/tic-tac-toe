@@ -38,7 +38,7 @@ export const checkIn = async (state: State, setState: (state: State) => void) =>
     } else {
         const winnerAlert = currentState.winner + ' is the winner!!'
 
-        alert(winnerAlert)
+        // alert(winnerAlert)
     }
 }
 

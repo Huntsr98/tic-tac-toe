@@ -24,7 +24,7 @@ export type GameId = 'gameId'
 export type Game = {
     players: UserPlayerIds
     whoseTurn: WhoseTurn
-    gameId: GameId
+    _id: GameId
     board: Move[]
     winner: null | UserId
 }

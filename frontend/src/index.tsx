@@ -4,7 +4,7 @@ import { checkForWin, isItMyTurn, join, makeAMove } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
 import { checkIn } from './checkIn'
-import {changeBoarderColor} from './board-CSS'
+import { changeBoarderColor, boardSquareImage } from './board-CSS'
 
 // 4/27 - what to do if theres a winner!
 // 2/27 notes
@@ -28,25 +28,23 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
         console.log('move already occupied')
         return
     }
-    // if (state.winner) {
-    //     console.log('winner!')
-    //     return
-    // }
+
     const gameId = state.gameId
     const userId = state.userId
-    
+
     const responseData = await makeAMove(userId, gameId, move)//await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
 
     setState(formState(responseData))
-    // boardSquareImage(state)
     timerId = setInterval(() => { checkIn(state, setState) }, 3000)
 
+    // const boardSquareImage: string = 
+    return boardSquareImage(move)
 }
 
 
 
 const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
-   
+
     const styles = {
         width: config.boardSquareWidth + 'px',
         height: config.boardSquareHeight + 'px',
@@ -55,11 +53,15 @@ const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: 
         //backgroundImage: boardSquareImage()
     }
     const cb = () => {
-        clickedBoardSquare(move, setState, state)
+        return clickedBoardSquare(move, setState, state)
     }
+    const testImage = <img src={'http://clipart-library.com/new_gallery/203-2034970_x-marks-the-spot-clip-art.png'} ></img>
+
     return <div onClick={cb} style={styles} className="boardSquare">
-        {/* <img src={styles.backgroundImage} ></img> */}
+        {/* <img src={cb} ></img> */}
+        {/* {cb} */}
         {move.type}
+        {/* {testImage} */}
     </div>
 }
 
@@ -208,7 +210,8 @@ export const formState = (response: ServerResponse): State => {
 export const View = () => {
     const [state, setState] = useState<State | null>(null)
     let body
-
+    let whoseTurnDisplay
+    let playerDisplay
     if (state === null) {
         body = <Button cb={
             async () => {
@@ -216,16 +219,35 @@ export const View = () => {
                 const newState: State = formState(response) //Convert response into newState
                 console.log({ response, newState })
                 setState(newState)
+                whoseTurnDisplay = null
+                playerDisplay = null
             }
         }></Button>
 
     } else {
+        playerDisplay = "You are player"+" "+state.gamePiece
         body = <BoardComponent setState={setState} state={state}></BoardComponent>
+        if (state.winner === null) {
+            if (state.isItMyTurn) {
+                whoseTurnDisplay = "It's your turn! Go! Go! Go!"
+            } else {
+                whoseTurnDisplay = "Hold your horses, it's not your turn..."
+            }
+        }
+        else {
+            if (state.gamePiece === state.winner) {
+                whoseTurnDisplay = "You win!!! You're a god!"
+            } else {
+                whoseTurnDisplay = "You have lost, thus dishonored your family"
+            }
+        }
     }
 
-    return <div>
 
+    return <div>
+        {playerDisplay}
         {body}
+        {whoseTurnDisplay}
     </div>
 }
 

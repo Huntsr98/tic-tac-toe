@@ -2,7 +2,7 @@ import { config } from "./state"
 import { Move, State } from "./state"
 
 
-const boardSquareImage = (move: Move): string => {
+export const boardSquareImage = (move: Move): string => {
     let backgroundImage
     if (move.type === null) {
         backgroundImage = ''
@@ -25,6 +25,7 @@ export const changeBoarderColor = (activeState: State): String => {
         } else {
             activeBoarderColor = config.boarderColor.winFlashOne
         }
+        
     }
     
     if (activeState.winner === null) {
@@ -35,6 +36,7 @@ export const changeBoarderColor = (activeState: State): String => {
         }
     } else {
         setInterval(() => winnerColorChange(), 1000)
+        return activeBoarderColor
     }
 
     return activeBoarderColor

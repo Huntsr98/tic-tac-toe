@@ -1,6 +1,19 @@
 git# Command Line Notes
 
 ## Git
+----- Files to server:
+git add {file(s) to commit}
+* adds files to next commit
+* git add . = directory we're in
+
+
+git commit -m {commit message}
+* commits added files with {commit message}
+
+git push
+* pushes current branch up to github
+------
+
 git status
 * gets the status of the current branch we're in
 * shows the changes since the last commit
@@ -16,17 +29,6 @@ git checkout -b {branch name}
 
 git diff {file name}
 * shows the difference in {file name} since last commit
-
-git add {file(s) to commit}
-* adds files to next commit
-* git add . = directory we're in
-
-
-git commit -m {commit message}
-* commits added files with {commit message}
-
-git push
-* pushes current branch up to github
 
 git fetch --all
 * downloads all remote git branches 

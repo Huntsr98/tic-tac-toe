@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
-import { checkForWin, forfeit, isItMyTurn, join, makeAMove, startNewGame } from './util';
+import { checkForWin, forfeit, isItMyTurn, join, makeAMove } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
 import { checkIn } from './checkIn'
@@ -237,8 +237,8 @@ export const View = () => {
             {/* EMILY - find new game w/ same userId but not this  */}
             <Button
                 cb={
-                    () => {
-                        forfeit(state.userId)
+                   () => {
+                       forfeit(state.userId, state.gameId)
                     }
                 }
                 buttonText='Forfeit'

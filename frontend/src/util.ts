@@ -16,9 +16,11 @@ const getUrl = (env: Env, endpoint: string) => {
     }
     return `${domain}${endpoint}`
 }
+
 const getUrlJoin = () => {
     return getUrl(config.env, config.api.join)
 }
+
 export const isItMyTurn = (whoseTurn: GamePiece, gamePiece: GamePiece): boolean => {
     return whoseTurn === gamePiece
 }
@@ -37,11 +39,10 @@ export const join = async (): Promise<ServerResponse> => {
 
 //EMILY
 
-export const forfeit = async(userId: UserId): Promise<ServerResponse> => {
+export const forfeit = async (userId: UserId, gameId: GameId): Promise<ServerResponse> => {
     // call to new endpoint that steve is making
 
-    // this should be going to end current game / or a forfeit endpoint? 
-    const response = await axios.post('http://localhost:3000/end-game', {userId})
+    const response = await axios.post('http://localhost:3000/forfeit', {userId, gameId})
     
     return response.data
     // response.data is the new games state

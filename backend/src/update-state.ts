@@ -1,4 +1,4 @@
-import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove, UserPlayerIds } from "./types"
+import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove, UserPlayerIds, MaybeGamePiece } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 import { extractPlayersMoves } from "./check-for-win";
 
@@ -17,7 +17,7 @@ export const utils = {
         })
     },
     convertStateToResponse: (gameOnly: Game, userId: UserId): ServerResponse => {
-        const { players, whoseTurn, board, ...remainingState } = gameOnly
+        const { players, whoseTurn, board, winner, ...remainingState } = gameOnly
         // explod..e out the contents of remainingState and capture them in a new object
         // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
         // players in ServerResponse
@@ -39,9 +39,25 @@ export const utils = {
             return browserMove
 
         })
-        const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, ...remainingState }
+        
+        const convertBrowserWinner = (players: UserPlayerIds, winner: null | UserId ): MaybeGamePiece => {
+            let convertedWinner
+            if (winner === players.X) {
+                convertedWinner = 'X' as GamePiece.X
+            } else if (winner === players.O) {
+                convertedWinner = 'O' as GamePiece.O
+            } else if (!winner) {
+                convertedWinner = null
+            }
+            return convertedWinner
+        }
+
+        const browserWinner: MaybeGamePiece = convertBrowserWinner(gameOnly.players, gameOnly.winner)
+
+        const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, winner: browserWinner, ...remainingState }
         return serverResponse
     },
+    
     checkForConflictingMove: (boardMoves: Move[], proposedMove: { x: number, y: number }): Move | undefined => {
         return boardMoves.find((move) => {
             proposedMove.x === move.x && proposedMove.y === move.y && move.userId

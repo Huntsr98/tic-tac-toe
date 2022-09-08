@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { formState } from '.'
+import { checkIn } from './checkIn'
 import { config, State, Env, GamePiece, Color, ServerResponse, UserId, GameId, Move, MaybeGamePiece } from './state'
-import { formState } from './index'
 
 
 export const checkForWin = (gamePiece: GamePiece, winner: MaybeGamePiece): boolean => {
@@ -25,16 +26,27 @@ export const isItMyTurn = (whoseTurn: GamePiece, gamePiece: GamePiece): boolean 
     return whoseTurn === gamePiece
 }
 
-export const join = async (): Promise<ServerResponse> => {
+export let timerId: number  // need to come back and Type
+export const startPolling = (setState: (state: State) => void, state: State) => {
+    timerId = setInterval(() => { checkIn(state, setState) }, 3000)
+}
+
+
+export const join = async (setState: (state: State) => void): Promise<void> => {
     const userId = localStorage.getItem('userId')
-    const response = await axios.post(getUrlJoin(), { userId }) //alternative to {userId: userId}
+    const response = await axios.post<ServerResponse>(getUrlJoin(), { userId }) //alternative to {userId: userId}
     // await halts the program until line 21 is completed, ie: until the server has replied
 
     const x = response.data.userId
     localStorage.setItem('userId', x)
 
-    return response.data
-    // response.data is the new games state
+    const newState: State = formState(response.data) //Convert response into newState
+    console.log({ response, newState })
+    setState(newState)
+
+    if (response.data.gamePiece !== response.data.whoseTurn) {
+        startPolling(setState, newState)
+    }
 }
 
 //EMILY
@@ -42,8 +54,8 @@ export const join = async (): Promise<ServerResponse> => {
 export const forfeit = async (userId: UserId, gameId: GameId): Promise<ServerResponse> => {
     // call to new endpoint that steve is making
 
-    const response = await axios.post('http://localhost:3000/forfeit', {userId, gameId})
-    
+    const response = await axios.post('http://localhost:3000/forfeit', { userId, gameId })
+
     return response.data
     // response.data is the new games state
 }

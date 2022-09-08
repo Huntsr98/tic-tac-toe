@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
-import { checkForWin, forfeit, isItMyTurn, join, makeAMove } from './util';
+import { checkForWin, forfeit, isItMyTurn, join, makeAMove, startPolling } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
 import { checkIn } from './checkIn'
@@ -12,7 +12,10 @@ import { changeBoarderColor } from './board-CSS'
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
 // Make sure what comes back from the server matches that of the state.
 
-export let timerId: number  // need to come back and Type
+
+
+
+
 const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
 
     if (!state.isItMyTurn) {
@@ -39,7 +42,8 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
 
     setState(formState(responseData))
     // boardSquareImage(state)
-    timerId = setInterval(() => { checkIn(state, setState) }, 3000)
+    // timerId = setInterval(() => { checkIn(state, setState) }, 3000)
+    startPolling(setState, state)
 
 }
 
@@ -221,10 +225,7 @@ export const View = () => {
         body = <Button
             cb={
                 async () => {
-                    const response: ServerResponse = await join()
-                    const newState: State = formState(response) //Convert response into newState
-                    console.log({ response, newState })
-                    setState(newState)
+                    join(setState)
                 }
             }
             buttonText='Join'
@@ -237,8 +238,8 @@ export const View = () => {
             {/* EMILY - find new game w/ same userId but not this  */}
             <Button
                 cb={
-                   () => {
-                       forfeit(state.userId, state.gameId)
+                    () => {
+                        forfeit(state.userId, state.gameId)
                     }
                 }
                 buttonText='Forfeit'

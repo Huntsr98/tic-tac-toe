@@ -1,6 +1,7 @@
 import { Action, ServerResponse, Game, GameId, GamePiece, Games, ServerState, StateUpdate, UserId, WhoseTurn, Move, BrowserMove, UserPlayerIds, MaybeGamePiece } from "./types"
 import { v4 as uuidv4 } from 'uuid';
 import { extractPlayersMoves } from "./check-for-win";
+import { saveGame } from "./mongoDb";
 
 export const getPlayersPiece = (game: Game, playerId: string) => {
     if (game.players.O === playerId) {
@@ -13,11 +14,13 @@ export const getPlayersPiece = (game: Game, playerId: string) => {
 export const utils = {
     findGame: (state: ServerState, gameId: GameId): Game => {
         return state.games.find((game) => {
-            return game.gameId === gameId
+            return game._id === gameId
         })
     },
     convertStateToResponse: (gameOnly: Game, userId: UserId): ServerResponse => {
-        const { players, whoseTurn, board, winner, ...remainingState } = gameOnly
+
+        const { players, whoseTurn, board, winner, _id, ...remainingState } = gameOnly
+
         // explod..e out the contents of remainingState and capture them in a new object
         // we're separating state into an object with the components players, and remainingstate so that we dont' have to have 
         // players in ServerResponse
@@ -39,6 +42,7 @@ export const utils = {
             return browserMove
 
         })
+
         
         const convertBrowserWinner = (players: UserPlayerIds, winner: null | UserId ): MaybeGamePiece => {
             let convertedWinner
@@ -54,7 +58,8 @@ export const utils = {
 
         const browserWinner: MaybeGamePiece = convertBrowserWinner(gameOnly.players, gameOnly.winner)
 
-        const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, winner: browserWinner, ...remainingState }
+        const serverResponse: ServerResponse = { userId, gamePiece, whoseTurn, board: browserBoard, winner: browserWinner, gameId: _id, ...remainingState }
+
         return serverResponse
     },
     
@@ -104,7 +109,7 @@ export const gameFactory = (): Game => {
         },
         board: [],
         whoseTurn: WhoseTurn.X,
-        gameId: uuidv4() as GameId,
+        _id: uuidv4() as GameId,
         winner: null
     }
 }
@@ -120,7 +125,7 @@ export const otherPlayer = (whoAmI: WhoseTurn) => {
 }
 
 
-export const updateState = (stateUpdate: StateUpdate) => {
+export const updateState = async (stateUpdate: StateUpdate) => {
     let game
     switch (stateUpdate.action) {
         // initialize the let games?
@@ -128,14 +133,18 @@ export const updateState = (stateUpdate: StateUpdate) => {
         case Action.join:
             //clone state.games before you mutate
             state.games = [...state.games]
+            console.log(state)
             // find game with GameId
             game = utils.findGame(state, stateUpdate.payload.gameId)
             // populate player[gamePiece] of game with UserId
             game.players[stateUpdate.payload.gamePiece] = stateUpdate.payload.userId
             break
         case Action.addGame:
+            await saveGame(stateUpdate.payload)
+
             //clone state.games before you mutate
             state.games = [...state.games]
+
             state.games.push(stateUpdate.payload)
             break
         case Action.makeAMove:

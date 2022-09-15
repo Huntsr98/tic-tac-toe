@@ -14,9 +14,9 @@ const boardSquareImage = (move: Move): string => {
     return backgroundImage
 }
 
-let activeBoarderColor: String
+let activeBoarderColor: string
 
-export const changeBoarderColor = (activeState: State): String => {
+export const changeBoarderColor = (activeState: State): string => {
     
     const winnerColorChange = () => {
         activeBoarderColor = config.boarderColor.winFlashOne

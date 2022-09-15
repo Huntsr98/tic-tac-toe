@@ -1,10 +1,10 @@
 import ReactDOM from 'react-dom';
 import { Board, Board as BoardComponent, boarderConfig, Color, config, GamePiece, MaybeGamePiece, Move, Row, ServerResponse, State } from './state'
-import { checkForWin, isItMyTurn, join, makeAMove } from './util';
+import { checkForWin, forfeit, isItMyTurn, join, makeAMove, startPolling } from './util';
 import React, { useState } from 'react'
 import axios from 'axios'
 import { checkIn } from './checkIn'
-import {changeBoarderColor} from './board-CSS'
+import { changeBoarderColor } from './board-CSS'
 
 // 4/27 - what to do if theres a winner!
 // 2/27 notes
@@ -12,7 +12,10 @@ import {changeBoarderColor} from './board-CSS'
 // ensure that the payload im sending to the server matches what the server is expecting (arguments of makeAMove)
 // Make sure what comes back from the server matches that of the state.
 
-export let timerId: number  // need to come back and Type
+
+
+
+
 const clickedBoardSquare = async (move: Move, setState: (state: State) => void, state: State): Promise<void> => {
 
     if (!state.isItMyTurn) {
@@ -34,19 +37,20 @@ const clickedBoardSquare = async (move: Move, setState: (state: State) => void, 
     // }
     const gameId = state.gameId
     const userId = state.userId
-    
+
     const responseData = await makeAMove(userId, gameId, move)//await axios.post('http://localhost:3000/make-a-move', { userId, gameId, move })
 
     setState(formState(responseData))
     // boardSquareImage(state)
-    timerId = setInterval(() => { checkIn(state, setState) }, 3000)
+    // timerId = setInterval(() => { checkIn(state, setState) }, 3000)
+    startPolling(setState, state)
 
 }
 
 
 
 const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: State) => void, state: State }) => {
-   
+
     const styles = {
         width: config.boardSquareWidth + 'px',
         height: config.boardSquareHeight + 'px',
@@ -63,12 +67,20 @@ const BoardSquare = ({ move, setState, state }: { move: Move, setState: (state: 
     </div>
 }
 
-const Button = ({ cb }: { cb: () => void }) => {
+const Button = ({ cb, buttonText }: { cb: () => void, buttonText: string }) => {
 
     return <button onClick={cb}>
-        Join
+        {buttonText}
     </button>
 }
+
+//EMILY
+// const StartNewGameButton = ({ cb }: { cb: () => void }) => {
+
+//     return <button onClick={cb}>
+//         Start New Game
+//     </button>
+// }
 
 let interval: any
 const BoardComponent = ({ state, setState }: { state: State, setState: (state: State) => void }) => {
@@ -210,21 +222,33 @@ export const View = () => {
     let body
 
     if (state === null) {
-        body = <Button cb={
-            async () => {
-                const response: ServerResponse = await join()
-                const newState: State = formState(response) //Convert response into newState
-                console.log({ response, newState })
-                setState(newState)
+        body = <Button
+            cb={
+                async () => {
+                    join(setState)
+                }
             }
-        }></Button>
+            buttonText='Join'
+        ></Button>
 
     } else {
-        body = <BoardComponent setState={setState} state={state}></BoardComponent>
+        // add Join New Game button here
+        // does it do the same as Button, but with different text? 
+        body = <div>
+            {/* EMILY - find new game w/ same userId but not this  */}
+            <Button
+                cb={
+                    () => {
+                        forfeit(state.userId, state.gameId)
+                    }
+                }
+                buttonText='Forfeit'
+            ></Button>
+            <BoardComponent setState={setState} state={state}></BoardComponent>
+        </div>
     }
 
     return <div>
-
         {body}
     </div>
 }

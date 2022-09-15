@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import { utils, findWaitingGame, gameFactory, getState, state, updateState } from './update-state';
-import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games } from './types';
+import { Action, Game, GameId, GamePiece, ServerState, UserId, UserPlayerIds, WhoseTurn, ServerResponse, Move, Games, RequestStructure } from './types';
 import { v4 as uuidv4 } from 'uuid'
 import { checkForWin } from './check-for-win';
 import "./mongoDb"
@@ -160,13 +160,15 @@ export const makeAMove = async (
     const state = getState()
     let gameOnly = utils.findGame(state, req.body.gameId)
 
+    let winner
+    winner = checkForWin(req.body.userId, gameOnly.board)
+    let myturn
+    myturn = isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)
 
-    // HW: check for winner here, block if there is one. 
 
-
-
-    if (isItMyTurn(req.body.userId, gameOnly.players, gameOnly.whoseTurn)) {
+    if (!winner && myturn) {
         const serverState: ServerState = await updateState({
+
             action: Action.makeAMove,
             payload: {
                 gameId: req.body.gameId,
@@ -179,8 +181,9 @@ export const makeAMove = async (
         })
         gameOnly = utils.findGame(serverState, req.body.gameId)
 
-        const winner = checkForWin(req.body.userId, gameOnly.board)
-        let newServerState: ServerState 
+        winner = checkForWin(req.body.userId, gameOnly.board)
+        let newServerState: ServerState
+
         const conflictingMove = utils.checkForConflictingMove(gameOnly.board, req.body.move)
 
         if (conflictingMove) {
@@ -204,55 +207,20 @@ export const makeAMove = async (
             })
 
         }
-
-        // HW: 
-        // check adding second player to existing game
-        // why is it allowing two moves in the same square? 
-        // only updates when you click....
-
-
-        // how do you get it to update by itself???
-        // clearinterval w/ (state, setstate in frontend?)
-        // if (isItMyTurn(currentState) === true) {
-        //     clearInterval(timerId)
-
-        //     setState(currentState)
-        // }
-
-        // if there is no winner, switch turns.
         gameOnly = utils.findGame(newServerState, req.body.gameId)
 
     } else {
         gameOnly = utils.findGame(getState(), req.body.gameId)
-    } // do I still need this else? 
-
-    console.log({ gameOnly })
-
+    }
     const serverResponse: ServerResponse = utils.convertStateToResponse(gameOnly, req.body.userId)
     res.send(serverResponse)
 
-    // send serverResponse
-
-
-
-
 }
+
 app.post('/make-a-move', makeAMove)
 
-//make /move endpoint
 
 
-app.listen(port, () => {
-    // logger(`Example app listening on port ${port}!`)
-});
-
-//--------------------------------------------- 
-type RequestStructure = {
-    body: {
-        userId: UserId
-        gameId: GameId
-    }
-}
 
 export const forfeit = async (
     req: RequestStructure,
@@ -297,3 +265,12 @@ export const forfeit = async (
 
 
 app.post('/forfeit', forfeit)
+
+
+
+
+app.listen(port, () => {
+    // logger(`Example app listening on port ${port}!`)
+});
+
+//--------------------------------------------- 

@@ -19,6 +19,14 @@ export type UserPlayerIds = {
     O: null | UserId
 }
 
+export type RequestStructure = {
+    body: {
+        userId: UserId
+        gameId: GameId
+    }
+}
+
+
 export type UserId = 'userId'
 export type GameId = 'gameId'
 export type Game = {
@@ -39,13 +47,15 @@ export type BrowserMove = {
     type: GamePiece
 }
 
+export type MaybeGamePiece = null | GamePiece
+
 export type ServerResponse = {
     userId: UserId,
     gamePiece: GamePiece
     whoseTurn: WhoseTurn,
     gameId: GameId,
     board: BrowserMove[],
-    winner: null | UserId
+    winner: MaybeGamePiece
 }
 
 // enum crosses the boundary of type and object
